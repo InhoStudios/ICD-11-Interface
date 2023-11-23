@@ -1,63 +1,88 @@
 CREATE DATABASE IF NOT EXISTS ildsdb;
 USE ildsdb;
 
-CREATE TABLE IF NOT EXISTS Cases (
-	case_id varchar(255),
-    age int,
-    sex varchar(1),
-    history tinyint(1),
-    ethnicity varchar(100),
-    user_selected_entity varchar(255) not null,
-    clinician_entity varchar(255),
-    pathologist_entity varchar(255),
-    size int,
-    severity varchar(100),
-    fitzpatrick_type int,
-    ita int,
-    tags varchar(1023),
-    primary key (case_id)
+CREATE TABLE IF NOT EXISTS Participant (
+    participant_id varchar(15) not null,
+    birth_date date not null,
+    sex char(1),
+    skin_type tinyint(7),
+    ethnicity varchar(127),
+    tags varchar(511),
+    primary key (participant_id)
 );
 
 CREATE TABLE IF NOT EXISTS ICD_Entity (
-	entity_id varchar(255),
+	entity_id varchar(31) not null,
     entity_title varchar(255),
     primary key (entity_id)
 );
 
-CREATE TABLE IF NOT EXISTS Image (
-	img_id varchar(63) not null,
-    filename varchar(255) not null,
-    case_id varchar(255) not null,
-    modality varchar(255) not null,
-    camera varchar(255),
-    imaging_conditions varchar(255),
-    operator varchar(255),
-    image_quality varchar(255),
-    illumination varchar(255),
-    color_constancy_applied varchar(150),
-
-    view int,
-    anatomic_site varchar(150),
-
-    resolved boolean,
-    detectability float,
-
-    url varchar(511),
-
-    primary key (img_id),
-    foreign key (case_id) references Cases(case_id) on delete cascade
+CREATE TABLE IF NOT EXISTS Anatomic_Site (
+	anatomic_id int not null,
+    anatomic_site varchar(127),
+    primary key (anatomic_id)
 );
 
-CREATE TABLE IF NOT EXISTS Case_Categories (
-	case_id varchar(255),
-    entity_id varchar(255),
-    foreign key (case_id) references Cases(case_id) on delete cascade,
+CREATE TABLE IF NOT EXISTS Lesion (
+    lesion_id varchar(15) not null,
+    participant_id varchar(15) not null,
+    diagnosis_entity varchar(31) not null,
+    morphology varchar(2047),
+    anatomic_site int not null,
+    severity char(1),
+    primary key (lesion_id),
+    foreign key (participant_id) references Participant(participant_id) on delete cascade,
+    foreign key (diagnosis_entity) references ICD_Entity(entity_id),
+    foreign key (anatomic_site) references Anatomic_Site(anatomic_id)
+);
+
+CREATE TABLE IF NOT EXISTS Measurement (
+    measurement_id varchar(63) not null,
+    lesion_id varchar(15) not null,
+    filetype varchar(50) not null,
+    filepath varchar(1023) not null,
+    measurement_date date not null,
+    is_lesion boolean not null,
+    modality char(3) not null,
+    attendant varchar(255),
+
+    iso int not null,
+    aperture decimal(3, 1) not null,
+    shutterspeed varchar(15) not null,
+    polarization varchar(31) not null,
+
+    primary key (measurement_id),
+    foreign key (lesion_id) references Lesion(lesion_id)
+);
+
+CREATE TABLE IF NOT EXISTS Clinical (
+    measurement_id varchar(63) not null,
+    view int,
+    detectability float,
+    primary key (measurement_id),
+    foreign key (measurement_id) references Measurement(measurement_id)
+);
+
+CREATE TABLE IF NOT EXISTS VersionFile (
+    version_number int not null auto_increment,
+    measurement_id varchar(15) not null,
+    filetype varchar(50) not null,
+    filepath varchar(1023) not null,
+    version_type varchar(63) not null,
+    primary key (version_number, measurement_id),
+    foreign key (measurement_id) references Measurement(measurement_id)
+);
+
+CREATE TABLE IF NOT EXISTS Lesion_Categories (
+	lesion_id varchar(15),
+    entity_id varchar(31),
+    foreign key (lesion_id) references Lesion(lesion_id) on delete cascade,
     foreign key (entity_id) references ICD_Entity(entity_id) on delete cascade
 );
 
-CREATE TABLE IF NOT EXISTS Case_Alt_Diagnoses (
-	case_id varchar(255),
-	entity_id varchar(255),
-    foreign key (case_id) references Cases(case_id) on delete cascade,
+CREATE TABLE IF NOT EXISTS Lesion_Alt_Diagnoses (
+	lesion_id varchar(15),
+	entity_id varchar(31),
+    foreign key (lesion_id) references Lesion(lesion_id) on delete cascade,
     foreign key (entity_id) references ICD_Entity(entity_id) on delete cascade
 );
