@@ -1,10 +1,11 @@
 import React from "react";
 import ImageUploadField from "../components/submitComponents/ImageUploadField";
 import PatientInfoField from "../components/submitComponents/PatientInfoField";
+import DiagnosisField from "../components/submitComponents/DiagnosisField";
 import axios from "axios";
-import { Case, ImageMetadata, Participant, SERVER_ENDPOINT } from "../utilities/Structures";
+import { Case, ImageMetadata, SERVER_ENDPOINT } from "../utilities/Structures";
 
-export default class Submit extends React.Component {
+export default class Upload extends React.Component {
     searchQuery = "test";
     constructor(props) {
         super(props);
@@ -12,7 +13,6 @@ export default class Submit extends React.Component {
         this.state = {
             hideclass: "hidden-passthrough",
             searchTimeout: setTimeout(this.performSearch, 0),
-            patientTimeout: setTimeout(this.getPatient, 0),
             query: "",
             entities: [
             ],
@@ -29,96 +29,13 @@ export default class Submit extends React.Component {
             image: '',
             image_file: "",
             metadata: new ImageMetadata(),
-            attending_investigator: "",
-            patient_id: "",
-            measurements: {
-                0: {
-                    image: '',
-                    image_file: ''
-                }
-            },
-            participant: new Participant(),
-            participants: [],
         };
-    }
-
-    async handleEnterInvestigator(event) {
-        event.preventDefault();
-        this.setState({ attending_investigator: event.target.value });
-    }
-
-    async handleUpdatePatientID(event) {
-        event.preventDefault();
-        this.setState({ patient_id: event.target.value });
-        clearTimeout(this.state.patientTimeout);
-        this.setState({ patientTimeout: setTimeout(() => this.getPatientResults(event.target.value), 300) });
-    
-    }
-
-    async handleGetPatientID(event) {
-        event.preventDefault();
-        if (this.state.attending_investigator === "") {
-            alert("Please input your initials");
-            return;
-        };
-        let initials = "";
-        for (let subname of this.state.attending_investigator.split(" ")) {
-            initials = initials + subname[0].toUpperCase();
-        }
-        let entry = await fetch(`${SERVER_ENDPOINT}/patient_id?initials=${initials}`)
-            .then((entry) => entry.json())
-            .catch((err) => console.log(err));
-        console.log(entry);
-        this.setState({
-            patient_id: entry.code
-        });
-        this.getLog();
     }
 
     handleQueryUpdate(event) {
         event.preventDefault();
         clearTimeout(this.state.searchTimeout);
-        this.setState({ searchTimeout: setTimeout(() => this.getPatientResults(event.target.value), 300) });
-    }
-
-    async getPatientResults(query) {
-        if (query != undefined) {
-            let res = await fetch(`${SERVER_ENDPOINT}/db_select?values=p.participant_id&from=Participant p&where=p.participant_id like '${query}%'`)
-                .then((data) => data.json())
-                .catch((err) => console.log(err));
-            if (res.length > 0) {
-                this.setState({
-                    participants: res,
-                });
-            }
-        }
-    }
-
-    async getPatient(id) {
-        console.log(id);
-        if (id != undefined){
-            let part = await fetch(`${SERVER_ENDPOINT}/db_select?values=*&from=Participant p&where=p.participant_id="${id}"`)
-                .then((data) => data.json())
-                .catch((err) => console.log(err));
-            console.log(part);
-            if (part.length > 0) {
-                let part0 = part[0];
-                let dob = new Date(part0.birth_date);
-                let newPart = new Participant(
-                    part0.participant_id,
-                    `${dob.getFullYear()}-${String(dob.getMonth()).padStart(2, 0)}`,
-                    part0.sex,
-                    part0.eye_colour,
-                    part0.skin_type,
-                    part0.ethnicity,
-                    part0.hair_colour
-                )
-                this.setState({
-                    patient_id: id,
-                    participant: newPart,
-                });
-            }
-        }
+        this.setState({ searchTimeout: setTimeout(() => this.performSearch(event.target.value, this), 300) });
     }
 
     async performSearch(input, caller) {
@@ -197,8 +114,6 @@ export default class Submit extends React.Component {
     nestedSort = (prop1) => (e1, e2) => {
         return (e1[prop1] < e2[prop1]) ? 1 : (e1[prop1] > e2[prop1]) ? -1 : 0;
     }
-
-    // TODO: UPDATE ALL HANDLERS TO INCLUDE ID
 
     handleUpdateSeverity(e) {
         this.updateCase("severity", e.target.value);
@@ -287,15 +202,6 @@ export default class Submit extends React.Component {
         return await this.setState({case: newCase});
     }
 
-    async updateParticipant(key, value) {
-        let part = this.state.participant;
-        let newPart = {
-            ...part
-        };
-        newPart[key] = value;
-        return await this.setState({participant: newPart});
-    }
-
     async updateImageMetadata(key, value) {
         let curImgMetadata = this.state.metadata;
         let newImgMetadata = {
@@ -310,69 +216,71 @@ export default class Submit extends React.Component {
             <section>
                 <div className="container-fluid">
                     <div className="row justify-content-center mt-5 mb-3 text-center">
-                        <h1>Submit image</h1>
+                        <h1>Upload Data</h1>
                     </div>
 
                     <div className="row justify-content-center">
                         <div className="col-md-10 mb-2 text-left">
-                            <div className="form-group row mb-4">
-                                <div className="col-lg-4">
-                                    <input type="input" className="form-control form-control-lg" id="name"
-                                        name="name" placeholder="Attending Investigator (Full Name)" value={this.state.attending_investigator}
-                                            onChange={this.handleEnterInvestigator.bind(this)}/>
-                                </div>
-                                <div className="col-lg-6">
-                                    <input type="input" className="form-control form-control-lg" id="patient_id"
-                                        name="patient_id" placeholder="Patient ID" value={this.state.patient_id}
-                                            onChange={this.handleUpdatePatientID.bind(this)}
-                                            onFocus={(e) => {
-                                                e.preventDefault();
-                                                document.querySelectorAll(`.participant-list`).forEach(a => a.style.display = "block");
-                                            }}
-                                            onBlur={(e) => {
-                                                e.preventDefault();
-                                                document.querySelectorAll(`.participant-list`).forEach(a => a.style.display = "none");
-                                            }}/>
-                                    <div className={`search-content participant-list`}>
-                                        {
-                                            this.state.participants.map((participant) => (
-                                                <a onMouseDown={(e) => {
-                                                    e.preventDefault();
-                                                    this.getPatient(participant.participant_id);
-                                                }}
-                                                id={
-                                                    participant.participant_id
-                                                }
-                                                dangerouslySetInnerHTML={{__html: participant.participant_id}} />
-                                            ))
-                                        }
-                                    </div>
-                                </div>
-                                <div className="col-lg-2">
-                                    <input type="submit" className="form-control form-control-lg btn btn-outline-primary btn-lg" value="Generate New ID" onClick={this.handleGetPatientID.bind(this)}/>
-                                </div>
+                            <div className="row mb-3">
+                                <ImageUploadField 
+                                    updateImage={this.handleUpdateImage.bind(this)}
+                                    updateImgtype={this.handleUpdateImgtype.bind(this)}
+                                    updateSite={this.handleUpdateSite.bind(this)}
+                                    imageFile={this.state.image_file}
+                                />
                             </div>
-                            <PatientInfoField 
-                                updateAge={this.handleUpdateAge.bind(this)}
-                                updateSex={this.handleUpdateSex.bind(this)}
-                                updateHist={this.handleUpdateHist.bind(this)}
-                                participant={this.state.participant}
-                            />
-                            <ImageUploadField 
-                                updateImage={this.handleUpdateImage.bind(this)}
-                                updateImgtype={this.handleUpdateImgtype.bind(this)}
-                                updateSite={this.handleUpdateSite.bind(this)}
-                                updateQuery={this.handleQueryUpdate.bind(this)}
-                                updateSeverity={this.handleUpdateSeverity.bind(this)} 
-                                updateDod={this.handleUpdateDod.bind(this)}
-                                updateSize={this.handleUpdateSize.bind(this)}
-                                selectChange={this.handleSelectChange}
-                                query={this.props.query}
-                                parent={this}
-                                measurements={this.state.measurements}
-                            />
 
                             <div className="row mb-5">
+                                <div className="col-lg-6">
+                                    <div className="row">
+                                        <form method="post" encType="multipart/form-data" onSubmit={(e) => e.preventDefault()}>
+                                            <div className="row mb-3">
+                                                {/* <h4 className="mb-3">Search ICD-11 (ICDD) diagnosis</h4> */}
+                                                <h4 className="mb-4">Diagnosis information</h4>
+                                                <div className="form-group dropdown">
+                                                    <label htmlFor="search">
+                                                        Search diagnosis
+                                                    </label>
+                                                        <input type="input" className="form-control form-control-lg" id="search"
+                                                            name="search" placeholder="Search Diagnosis ↓" value={this.props.query}
+                                                                onChange={this.handleQueryUpdate.bind(this)}
+                                                                onFocus={(e) => {
+                                                                    e.preventDefault();
+                                                                    document.querySelectorAll(".diagnosis-list").forEach(a => a.style.display = "block");
+                                                                }}/>
+                                                        <div className="search-content diagnosis-list">
+                                                            {
+                                                                this.state.entities.map((entry) => (
+                                                                    <a onClick={(e) => {
+                                                                        e.preventDefault();
+                                                                        this.handleSelectChange(entry, this);
+                                                                    }}
+                                                                    id={
+                                                                        entry.id.replace("https://id.who.int/icd/entity/")
+                                                                    } dangerouslySetInnerHTML={{__html: entry.title}} />
+                                                                ))
+                                                            }
+                                                        </div>
+                                                </div>
+                                            </div>
+                                        </form>
+                                        <DiagnosisField 
+                                            entity={this.state.selectedOption} 
+                                            updateSeverity={this.handleUpdateSeverity.bind(this)} 
+                                            updateDod={this.handleUpdateDod.bind(this)}
+                                            updateSize={this.handleUpdateSize.bind(this)}
+                                        />
+                                    </div>
+                                </div>
+                                <div className="col-lg-6">
+                                    <div className="row">
+                                        <PatientInfoField 
+                                            updateAge={this.handleUpdateAge.bind(this)}
+                                            updateSex={this.handleUpdateSex.bind(this)}
+                                            updateHist={this.handleUpdateHist.bind(this)}
+                                        />
+                                    </div>
+                                </div>
                                 <form method="post" encType="multipart/form-data">
                                     {/* <div className={`row ${this.hideclass} mb-5`}>
                                         <DiagnosisField 

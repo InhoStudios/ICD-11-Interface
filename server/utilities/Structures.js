@@ -33,6 +33,21 @@ class Image {
     imgtype;
 }
 
+class LogEntry {
+    code;
+    initials;
+    timestamp;
+    unused;
+
+    constructor(code, initials, timestamp) {
+        this.code = code;
+        this.initials = initials;
+        this.timestamp = timestamp;
+        this.unused = false;
+    }
+}
+
 module.exports.ICD = ICD;
 module.exports.Case = Case;
 module.exports.METHODS = METHODS;
+module.exports.LogEntry = LogEntry;

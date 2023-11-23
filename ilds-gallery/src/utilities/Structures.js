@@ -12,6 +12,44 @@ export const METHODS = {
     POST: "POST"
 }
 
+export class Participant {
+    participant_id;
+    mob;
+    sex;
+    eye_colour;
+    skin_type;
+    ethnicity;
+    hair_colour;
+    tags;
+
+    constructor(pid, mob, sex, eyecol, skintype, eth, hc) {
+        this.participant_id = pid;
+        this.mob = mob;
+        this.sex = sex;
+        this.eye_colour = eyecol;
+        this.skin_type = skintype;
+        this.ethnicity = eth;
+        this.hair_colour = hc;
+    }
+}
+
+export class Lesion {
+    lesion_id;
+    diagnosis_entity;
+    morphology;
+    anatomic_site;
+    severity;
+}
+
+export class Measurement {
+    measurement_id;
+    lesion; // Lesion class
+    measurement_date;
+    is_lesion;
+    modality;
+    operator;
+}
+
 export class Case {
     caseID;
     ancestors;
@@ -45,8 +83,8 @@ export class ImageMetadata {
     view;
 }
 
-// export const SERVER_ENDPOINT = `http://${process.env.EXP_IP}:${process.env.EXP_PORT}`;
-export const SERVER_ENDPOINT = 'http://localhost:9000'; //`http://128.189.163.168:8081`;
+export const SERVER_ENDPOINT = `http://128.189.163.168:8081`;
+// export const SERVER_ENDPOINT = `http://localhost:9000`;
 
 export const ANATOMIC_SITES = [
     {

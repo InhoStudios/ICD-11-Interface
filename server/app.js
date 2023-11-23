@@ -6,6 +6,9 @@ var logger = require('morgan');
 
 var cors = require('cors');
 
+const dotenv = require("dotenv");
+dotenv.config();
+
 var indexRouter = require('./routes/index');
 var tokenRouter = require('./routes/token');
 var searchRouter = require('./routes/search');
@@ -18,7 +21,6 @@ var imageRouter = require('./routes/image');
 var patientIDRouter = require('./routes/patient_id');
 
 var app = express();
-
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');

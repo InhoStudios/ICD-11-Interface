@@ -1,5 +1,5 @@
-CREATE DATABASE IF NOT EXISTS skinimages;
-USE skinimages;
+CREATE DATABASE IF NOT EXISTS ildsdb;
+USE ildsdb;
 
 CREATE TABLE IF NOT EXISTS Cases (
 	case_id varchar(255),

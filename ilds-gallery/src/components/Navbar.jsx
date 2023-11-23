@@ -26,6 +26,9 @@ export default class Navbar extends React.Component {
                             <li className="nav-item">
                                 <a className="nav-link" href="/verify">Verify</a>
                             </li>
+                            <li className="nav-item">
+                                <a className="nav-link" href="/timecode">Patient ID Log</a>
+                            </li>
                             </ul>
                         </div>
                     </div>
