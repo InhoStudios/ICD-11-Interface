@@ -9,7 +9,7 @@ export default class Measurement extends React.Component {
             anatomic: null,
             modality: null,
             lesion: null,
-            show: true,
+            show: false,
             image: '',
             image_file: '',
             visible: true, // is the entire field visible?
@@ -77,7 +77,11 @@ export default class Measurement extends React.Component {
     handleUpdateImage(e) {
         console.log(`handleUpdateImage()`);
         let fileURL = URL.createObjectURL(e.target.files[0]);
-        this.setState({ image: e.target.files[0], image_file: fileURL });
+        this.setState({ 
+            image: e.target.files[0], 
+            image_file: fileURL,
+            show: true,
+        });
         console.log(e.target.files[0]);
     }
 
@@ -197,16 +201,16 @@ export default class Measurement extends React.Component {
                                         <a className={`itype_${this.props.id} std-type_${this.props.id}`}
                                         onMouseDown={(e) => {
                                             e.preventDefault();
-                                            this.handleUpdateImgType("PTG");
+                                            this.handleUpdateImgType("Clinical");
                                         }}>
-                                                Clinical Photography (PTG)
+                                                Clinical
                                         </a>
                                         <a className={`itype_${this.props.id} std-type_${this.props.id}`}
                                         onMouseDown={(e) => {
                                             e.preventDefault();
-                                            this.handleUpdateImgType("MDM");
+                                            this.handleUpdateImgType("Dermoscopy");
                                         }}>
-                                                Multispectral Dermoscopy (MDM)
+                                                Dermoscopy
                                         </a>
                                         <a className={`itype_${this.props.id}`}>Other</a>
                                     </div>
@@ -219,7 +223,7 @@ export default class Measurement extends React.Component {
                         </div>
                         <div className="col-lg-6 mb-3">
                             <div className="form-group row">
-                                <div className="mb-3 dropdown">
+                                <div className="col-lg-8 mb-3 dropdown">
                                         <input type="input" className="form-control form-control-lg" id="search"
                                             name="search" placeholder="Search Diagnosis ↓"
                                                 // value={this.state.query}
@@ -241,6 +245,13 @@ export default class Measurement extends React.Component {
                                                 ))
                                             }
                                         </div>
+                                </div>
+                                
+                                <div className="col-lg-4 mb-3 dropdown">
+                                    <input type="button"
+                                            className="form-control form-control-lg btn btn-outline-primary btn-lg "
+                                            id="useprev" value="Use Previous" name="useprev" data-id="0"
+                                             />
                                 </div>
                             </div>
                             <div className="row">

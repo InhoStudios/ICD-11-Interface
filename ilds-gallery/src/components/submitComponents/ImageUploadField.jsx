@@ -8,17 +8,13 @@ export default class ImageUploadField extends React.Component {
         super(props);
 
         this.state = {
-            measurements: [
-                <Measurement 
-                    id={0} 
-                    {...this.props} 
-                />],
-            idCounter: 1,
+            measurements: [],
+            idCounter: 0,
         };
     }
 
-    addImage() {
-        this.setState(prevState => ({
+    async addImage() {
+        await this.setState(prevState => ({
             measurements: [...prevState.measurements, 
                 <Measurement 
                     id={prevState.idCounter} 
@@ -26,6 +22,8 @@ export default class ImageUploadField extends React.Component {
                 ],
             idCounter: prevState.idCounter + 1,
         }));
+        let nextID = `imgUpload_${this.state.idCounter - 1}`;
+        document.getElementById(nextID).click();
     }
 
     render() {

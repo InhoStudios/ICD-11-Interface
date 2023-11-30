@@ -4,8 +4,38 @@ const AdmZip = require("adm-zip");
 var router = express.Router();
 
 router.get('/', async (req, res, next) => {
-    let results = await getImagesFromRequest(req);
-    res.send(results);
+    // TODO: REMOVE STUB CODE
+    res.send([
+        {
+            url:"https://picsum.photos/640",
+            participant_id: "PTG231123A",
+            entity_title:"Test Diagnosis",
+            img_id:"1234",
+            user_selected_entity:"abcd1234",
+            modality:"Clinical",
+            anatomic_site:199,
+        },
+        {
+            url:"https://picsum.photos/450",
+            participant_id: "PTG231123B",
+            entity_title:"Another Diagnosis",
+            img_id:"1235",
+            user_selected_entity:"abcde345",
+            modality:"Dermoscopy",
+            anatomic_site:199,
+        },
+        {
+            url:"https://picsum.photos/540",
+            participant_id: "PTG231123B",
+            entity_title:"Woah, Slow Down",
+            img_id:"1236",
+            user_selected_entity:"nope",
+            modality:"Clinical",
+            anatomic_site:199,
+        }
+    ]);
+    // let results = await getImagesFromRequest(req);
+    // res.send(results);
 });
 
 router.get('/download', async(req, res, next) => {

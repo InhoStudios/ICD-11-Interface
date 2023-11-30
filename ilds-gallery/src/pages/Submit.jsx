@@ -82,7 +82,7 @@ export default class Submit extends React.Component {
     }
 
     async getPatientResults(query) {
-        if (query != undefined) {
+        if (query !== undefined) {
             let res = await fetch(`${SERVER_ENDPOINT}/db_select?values=p.participant_id&from=Participant p&where=p.participant_id like '${query}%'`)
                 .then((data) => data.json())
                 .catch((err) => console.log(err));
@@ -96,7 +96,7 @@ export default class Submit extends React.Component {
 
     async getPatient(id) {
         console.log(id);
-        if (id != undefined){
+        if (id !== undefined){
             let part = await fetch(`${SERVER_ENDPOINT}/db_select?values=*&from=Participant p&where=p.participant_id="${id}"`)
                 .then((data) => data.json())
                 .catch((err) => console.log(err));
@@ -108,10 +108,8 @@ export default class Submit extends React.Component {
                     part0.participant_id,
                     `${dob.getFullYear()}-${String(dob.getMonth()).padStart(2, 0)}`,
                     part0.sex,
-                    part0.eye_colour,
                     part0.skin_type,
-                    part0.ethnicity,
-                    part0.hair_colour
+                    part0.ethnicity
                 )
                 this.setState({
                     patient_id: id,
@@ -316,12 +314,13 @@ export default class Submit extends React.Component {
                     <div className="row justify-content-center">
                         <div className="col-md-10 mb-2 text-left">
                             <div className="form-group row mb-4">
-                                <div className="col-lg-4">
+                                <h4 className="mb-4">Attending Investigator</h4>
+                                <div className="col-lg-12">
                                     <input type="input" className="form-control form-control-lg" id="name"
                                         name="name" placeholder="Attending Investigator (Full Name)" value={this.state.attending_investigator}
                                             onChange={this.handleEnterInvestigator.bind(this)}/>
                                 </div>
-                                <div className="col-lg-6">
+                                {/* <div className="col-lg-6">
                                     <input type="input" className="form-control form-control-lg" id="patient_id"
                                         name="patient_id" placeholder="Patient ID" value={this.state.patient_id}
                                             onChange={this.handleUpdatePatientID.bind(this)}
@@ -350,7 +349,7 @@ export default class Submit extends React.Component {
                                 </div>
                                 <div className="col-lg-2">
                                     <input type="submit" className="form-control form-control-lg btn btn-outline-primary btn-lg" value="Generate New ID" onClick={this.handleGetPatientID.bind(this)}/>
-                                </div>
+                                </div> */}
                             </div>
                             <PatientInfoField 
                                 updateAge={this.handleUpdateAge.bind(this)}

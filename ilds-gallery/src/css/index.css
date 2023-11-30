@@ -5,6 +5,22 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* width */
+::-webkit-scrollbar {
+  width: 10px;
+}
+ 
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #cfcfcf; 
+  border-radius: 5px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #afafaf; 
+}
+
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
@@ -46,11 +62,29 @@ code {
   background-color: rgba(0, 0, 0, 0.3);
 }
 
+.modal-img-panel {
+  max-height: 80vh !important;
+  overflow-y: auto;
+}
+
+.modal-content-panel {
+  max-height: 80vh !important;
+  overflow-y: auto;
+}
+
+.modal-img {
+  min-width: 100% !important;
+  padding-bottom: 15px;
+}
+
 .modal-content {
   background-color: #fff;
-  margin: 5% auto;
+  margin: 3% auto;
   padding: 30px;
-  width:60%;
+  overflow-x:hidden;
+  overflow-y: auto;
+  width:90vw !important;
+  max-height: 90vh !important;
 }
 
 .overlay-wrapper {
@@ -92,15 +126,17 @@ code {
 }
 
 .close {
-  color: #aaa;
-  float: right;
-  font-size: 30px;
+  z-index: 3;
+  color: #efefef;
+  float: left;
+  position: fixed;
+  font-size: 50px;
   font-weight: bold;
 }
 
 .close:hover,
 .close:focus {
-  color: black;
+  color: #7f7f7f;
   text-decoration: none;
   cursor: pointer;
 }

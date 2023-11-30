@@ -14,21 +14,18 @@ export default class Navbar extends React.Component {
                     <div className=" text-right">
                         <div className="collapse navbar-collapse" id="navbarSupportedContent">
                             <ul className="navbar-nav mr-auto">
-                            <li className="nav-item active">
-                                <a className="nav-link" href="/">Home</a>
-                            </li>
-                            {/*<li className="nav-item">*/}
-                            {/*    <a className="nav-link" href="/quiz">Quiz</a>*/}
-                            {/*</li>*/}
-                            <li className="nav-item">
-                                <a className="nav-link" href="/submit">Submit</a>
-                            </li>
-                            <li className="nav-item">
-                                <a className="nav-link" href="/verify">Verify</a>
-                            </li>
-                            <li className="nav-item">
-                                <a className="nav-link" href="/timecode">Patient ID Log</a>
-                            </li>
+                                <li className="nav-item active">
+                                    <a className="nav-link" href="/">Home</a>
+                                </li>
+                                {/*<li className="nav-item">*/}
+                                {/*    <a className="nav-link" href="/quiz">Quiz</a>*/}
+                                {/*</li>*/}
+                                <li className="nav-item">
+                                    <a className="nav-link" href="/submit">Submit</a>
+                                </li>
+                                <li className="nav-item">
+                                    <a className="nav-link" href="/verify">Verify</a>
+                                </li>
                             </ul>
                         </div>
                     </div>
