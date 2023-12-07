@@ -15,14 +15,14 @@ export const METHODS = {
 export class Participant {
     participant_id;
     mob;
-    sex;
+    gender;
     skin_type;
     ethnicity;
 
-    constructor(pid, mob, sex, skintype, eth) {
+    constructor(pid, mob, gender, skintype, eth) {
         this.participant_id = pid;
         this.mob = mob;
-        this.sex = sex;
+        this.gender = gender;
         this.skin_type = skintype;
         this.ethnicity = eth;
     }
@@ -38,11 +38,17 @@ export class Lesion {
 
 export class Measurement {
     measurement_id;
-    lesion; // Lesion class
+    lesion_id;
+    filetype;
+    filepath;
     measurement_date;
-    is_lesion;
     modality;
-    operator;
+    attendant;
+    
+    iso;
+    aperture;
+    shutterspeed;
+    polarization;
 }
 
 export class Case {

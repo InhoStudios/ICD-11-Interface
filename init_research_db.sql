@@ -4,7 +4,7 @@ USE ildsdb;
 CREATE TABLE IF NOT EXISTS Participant (
     participant_id varchar(15) not null,
     birth_date date not null,
-    sex char(1),
+    gender varchar(63),
     skin_type tinyint(7),
     ethnicity varchar(127),
     tags varchar(511),
@@ -20,6 +20,8 @@ CREATE TABLE IF NOT EXISTS ICD_Entity (
 CREATE TABLE IF NOT EXISTS Anatomic_Site (
 	anatomic_id int not null,
     anatomic_site varchar(127),
+    as_level int not null,
+    parent int,
     primary key (anatomic_id)
 );
 
@@ -30,6 +32,7 @@ CREATE TABLE IF NOT EXISTS Lesion (
     morphology varchar(2047),
     anatomic_site int not null,
     severity char(1),
+    les_size int,
     primary key (lesion_id),
     foreign key (participant_id) references Participant(participant_id) on delete cascade,
     foreign key (diagnosis_entity) references ICD_Entity(entity_id),
@@ -42,8 +45,7 @@ CREATE TABLE IF NOT EXISTS Measurement (
     filetype varchar(50) not null,
     filepath varchar(1023) not null,
     measurement_date date not null,
-    is_lesion boolean not null,
-    modality char(3) not null,
+    modality varchar(63) not null,
     attendant varchar(255),
 
     iso int not null,

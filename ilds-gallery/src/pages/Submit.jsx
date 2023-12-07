@@ -2,7 +2,7 @@ import React from "react";
 import ImageUploadField from "../components/submitComponents/ImageUploadField";
 import PatientInfoField from "../components/submitComponents/PatientInfoField";
 import axios from "axios";
-import { Case, ImageMetadata, Participant, SERVER_ENDPOINT } from "../utilities/Structures";
+import { Case, ImageMetadata, Lesion, Measurement, Participant, SERVER_ENDPOINT } from "../utilities/Structures";
 
 export default class Submit extends React.Component {
     searchQuery = "test";
@@ -26,6 +26,7 @@ export default class Submit extends React.Component {
                 },
             },
             case: new Case(),
+            participant: new Participant(),
             image: '',
             image_file: "",
             metadata: new ImageMetadata(),
@@ -34,13 +35,30 @@ export default class Submit extends React.Component {
             measurements: {
                 0: {
                     image: '',
-                    image_file: ''
+                    image_file: '',
+                    show: true,
                 }
             },
-            participant: new Participant(),
-            participants: [],
+            measurement_metadata: {
+                0: new Measurement(),
+            },
+            lesions: {},
         };
     }
+
+    componentDidMount() {
+        this.loadPatientID();
+    }
+
+    async loadPatientID() {    
+        let entry = await fetch(`${SERVER_ENDPOINT}/patient_id?initials=${this.state.initials}`)
+            .then((entry) => entry.json())
+            .catch((err) => console.log(err));
+        console.log(entry);
+        this.updateParticipant("participant_id", entry.code);
+    }
+    
+    // UNUSED
 
     async handleEnterInvestigator(event) {
         event.preventDefault();
@@ -118,6 +136,8 @@ export default class Submit extends React.Component {
             }
         }
     }
+
+    // used
 
     async performSearch(input, caller) {
         let result = await fetch(`${SERVER_ENDPOINT}/search?query=${input}`)
@@ -198,6 +218,31 @@ export default class Submit extends React.Component {
 
     // TODO: UPDATE ALL HANDLERS TO INCLUDE ID
 
+    // NEW HANDLERS:
+    
+    handleUpdateMOB(e) {
+        console.log(`handleUpdateMOB(${e.target.value})`);
+        let date = Date.parse(e.target.value);
+        console.log(date);
+    }
+    
+    handleUpdateSkinType(e) {
+        this.updateParticipant("skin_type", e.target.value);
+        console.log(`handleUpdateSkinType(${e.target.value})`);
+    }
+    
+    handleUpdateEthnicity(e) {
+        this.updateParticipant("ethnicity", e.target.value);
+        console.log(`handleUpdateEthnicity(${e.target.value})`);
+    }
+
+    handleUpdateGender(e) {
+        this.updateParticipant("gender", e.target.value);
+        console.log(`handleUpdateGender(${e.target.value})`);
+    }
+
+    // old handlers
+
     handleUpdateSeverity(e) {
         this.updateCase("severity", e.target.value);
         console.log(`handleUpdateSeverity(${e.target.value})`);
@@ -217,26 +262,9 @@ export default class Submit extends React.Component {
         console.log(`handleUpdateAge()`);
     }
 
-    handleUpdateSex(e) {
-        this.updateCase("sex", e.target.value);
-        console.log(`handleUpdateSex()`);
-    }
-
     handleUpdateHist(e) {
         this.updateCase("history", e.target.value);
         console.log(`handleUpdateHist()`);
-    }
-
-    handleUpdateImage(e) {
-        console.log(`handleUpdateImage()`);
-        let fileURL = URL.createObjectURL(e.target.files[0]);
-        this.setState({ image: e.target.files[0], image_file: fileURL });
-        console.log(e.target.files[0]);
-    }
-
-    handleUpdateImgtype(type) {
-        console.log(`handleUpdateImgtype()`);
-        this.updateImageMetadata("modality", type);
     }
 
     handleUpdateSite(index) {
@@ -246,6 +274,10 @@ export default class Submit extends React.Component {
 
     async handleUpload(e) {
         e.preventDefault();
+        console.log(this.state);
+        return;
+        // TODO: REMOVE TEMP TESTING
+
         console.log(this.checkCase());
         if (!this.checkCase()) {
             alert("One or more fields are empty\n Please double check before resubmitting");
@@ -294,15 +326,6 @@ export default class Submit extends React.Component {
         return await this.setState({participant: newPart});
     }
 
-    async updateImageMetadata(key, value) {
-        let curImgMetadata = this.state.metadata;
-        let newImgMetadata = {
-            ...curImgMetadata
-        };
-        newImgMetadata[key] = value;
-        return await this.setState({metadata: newImgMetadata})
-    }
-
     render() {
         return (
             <section>
@@ -320,46 +343,17 @@ export default class Submit extends React.Component {
                                         name="name" placeholder="Attending Investigator (Full Name)" value={this.state.attending_investigator}
                                             onChange={this.handleEnterInvestigator.bind(this)}/>
                                 </div>
-                                {/* <div className="col-lg-6">
-                                    <input type="input" className="form-control form-control-lg" id="patient_id"
-                                        name="patient_id" placeholder="Patient ID" value={this.state.patient_id}
-                                            onChange={this.handleUpdatePatientID.bind(this)}
-                                            onFocus={(e) => {
-                                                e.preventDefault();
-                                                document.querySelectorAll(`.participant-list`).forEach(a => a.style.display = "block");
-                                            }}
-                                            onBlur={(e) => {
-                                                e.preventDefault();
-                                                document.querySelectorAll(`.participant-list`).forEach(a => a.style.display = "none");
-                                            }}/>
-                                    <div className={`search-content participant-list`}>
-                                        {
-                                            this.state.participants.map((participant) => (
-                                                <a onMouseDown={(e) => {
-                                                    e.preventDefault();
-                                                    this.getPatient(participant.participant_id);
-                                                }}
-                                                id={
-                                                    participant.participant_id
-                                                }
-                                                dangerouslySetInnerHTML={{__html: participant.participant_id}} />
-                                            ))
-                                        }
-                                    </div>
-                                </div>
-                                <div className="col-lg-2">
-                                    <input type="submit" className="form-control form-control-lg btn btn-outline-primary btn-lg" value="Generate New ID" onClick={this.handleGetPatientID.bind(this)}/>
-                                </div> */}
                             </div>
                             <PatientInfoField 
                                 updateAge={this.handleUpdateAge.bind(this)}
-                                updateSex={this.handleUpdateSex.bind(this)}
+                                updateMOB={this.handleUpdateMOB.bind(this)}
+                                updateGender={this.handleUpdateGender.bind(this)}
+                                updateSkinType={this.handleUpdateSkinType.bind(this)}
+                                updateEthnicity={this.handleUpdateSkinType.bind(this)}
                                 updateHist={this.handleUpdateHist.bind(this)}
                                 participant={this.state.participant}
                             />
                             <ImageUploadField 
-                                updateImage={this.handleUpdateImage.bind(this)}
-                                updateImgtype={this.handleUpdateImgtype.bind(this)}
                                 updateSite={this.handleUpdateSite.bind(this)}
                                 updateQuery={this.handleQueryUpdate.bind(this)}
                                 updateSeverity={this.handleUpdateSeverity.bind(this)} 
@@ -373,19 +367,6 @@ export default class Submit extends React.Component {
 
                             <div className="row mb-5">
                                 <form method="post" encType="multipart/form-data">
-                                    {/* <div className={`row ${this.hideclass} mb-5`}>
-                                        <DiagnosisField 
-                                            entity={this.state.selectedOption} 
-                                            updateSeverity={this.handleUpdateSeverity.bind(this)} 
-                                            updateDod={this.handleUpdateDod.bind(this)}
-                                            updateSize={this.handleUpdateSize.bind(this)}
-                                        />
-                                        <PatientInfoField 
-                                            updateAge={this.handleUpdateAge.bind(this)}
-                                            updateSex={this.handleUpdateSex.bind(this)}
-                                            updateHist={this.handleUpdateHist.bind(this)}
-                                        />
-                                    </div> */}
                                         <div className="form-group mt-5 mb-3">
                                             <input 
                                                 type="submit"

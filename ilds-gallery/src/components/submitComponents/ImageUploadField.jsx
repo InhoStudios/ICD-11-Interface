@@ -22,6 +22,28 @@ export default class ImageUploadField extends React.Component {
                 ],
             idCounter: prevState.idCounter + 1,
         }));
+        
+        let curMeasurementFiles = this.props.parent.state.measurements;
+        let newMeasurementFiles = {
+            ...curMeasurementFiles,
+        };
+        newMeasurementFiles[`${this.state.idCounter - 1}`] = {
+            image: '',
+            image_file: '',
+        }
+        await this.props.parent.setState({
+            measurements: newMeasurementFiles,
+        });
+
+        let curMeasurements = this.props.parent.state.measurement_metadata;
+        let newMeasurements = {
+            ...curMeasurements,
+        };
+        newMeasurements[`${this.state.idCounter - 1}`] = new Measurement();
+        await this.props.parent.setState({
+            measurement_metadata: newMeasurements,
+        });
+        
         let nextID = `imgUpload_${this.state.idCounter - 1}`;
         document.getElementById(nextID).click();
     }
