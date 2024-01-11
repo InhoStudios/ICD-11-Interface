@@ -30,18 +30,21 @@ var upload = multer({
     }
 });
 
-router.post('/', upload.single('image'), async (req, res, next) => {
-    if (!req.file) {
+router.post('/', upload.any(), async (req, res, next) => {
+    console.log(req.files);
+    if (!req.files) {
         console.log("No image received");
         return res.send({
             success: false
         });
     } else {
         let promises = [];
+        return res.send({
+            success: true
+        });
 
         let caseBody = JSON.parse(req.body.case);
         let caseID = uuidv4();
-        console.log(JSON.stringify(caseBody));
 
         let imageBody = JSON.parse(req.body.imageMetadata);
         let imageID = uuidv4();

@@ -1,14 +1,12 @@
 import React from "react";
-import { ANATOMIC_SITES, Lesion, SERVER_ENDPOINT } from "../../utilities/Structures";
+import { ANATOMIC_SITES, Lesion, SERVER_ENDPOINT, Metadata } from "../../utilities/Structures";
 
 export default class Measurement extends React.Component {
 
     constructor(props) {
         super(props);
         this.state = {
-            anatomic: null,
-            modality: null,
-            lesion_id: null,
+            lesion_id: '',
             show: false,
             image: '',
             image_file: '',
@@ -70,13 +68,14 @@ export default class Measurement extends React.Component {
         this.setState({modality: val});
         document.querySelectorAll(`.itype_${this.props.id}`).forEach(a => a.style.display = "none");
         
-        let curMeasurements = this.props.parent.state.measurement_metadata;
+        let curMeasurements = this.props.parent.state.measurements;
         let newMeasurements = {
             ...curMeasurements,
         };
-        newMeasurements[`${this.props.id}`].modality = val;
+        console.log(newMeasurements[`${this.props.id}`]);
+        newMeasurements[`${this.props.id}`].metadata.modality = val;
         this.props.parent.setState({
-            measurement_metadata: newMeasurements,
+            measurements: newMeasurements,
         });
     }
 
@@ -97,19 +96,21 @@ export default class Measurement extends React.Component {
         newMeasurementFiles[`${this.props.id}`] = {
             image: e.target.files[0],
             image_file: fileURL,
+            metadata: new Metadata(),
         }
+        newMeasurementFiles[`${this.props.id}`].metadata.filetype = e.target.files[0].type;
         this.props.parent.setState({
             measurements: newMeasurementFiles
         });
         
-        let curMeasurements = this.props.parent.state.measurement_metadata;
-        let newMeasurements = {
-            ...curMeasurements,
-        };
-        newMeasurements[`${this.props.id}`].filetype = e.target.files[0].type;
-        this.props.parent.setState({
-            measurement_metadata: newMeasurements,
-        });
+        // let curMeasurements = this.props.parent.state.measurement_metadata;
+        // let newMeasurements = {
+        //     ...curMeasurements,
+        // };
+        // newMeasurements[`${this.props.id}`].filetype = e.target.files[0].type;
+        // this.props.parent.setState({
+        //     measurement_metadata: newMeasurements,
+        // });
         
         console.log(this.props.parent.state.measurements);
     }
@@ -170,11 +171,9 @@ export default class Measurement extends React.Component {
         definitionField.style.display = "block";
 
         // create new lesion
+        // TODO: Handle creating a new lesion ID
         let byte = Math.round(Math.random() * 255).toString(16).padStart(2, '0');
         let lesionID = this.props.parent.state.participant.participant_id + byte;
-        this.setState({
-            lesion_id: lesionID,
-        });
         let lesion = new Lesion();
         lesion.lesion_id = lesionID;
         this.props.parent.setState({
@@ -183,12 +182,43 @@ export default class Measurement extends React.Component {
                 [lesionID]: lesion
             }
         });
+
+        // TODO: figure out whats happening here
+        let curMeasurementFiles = this.props.parent.state.measurements;
+        let newMeasurementFiles = {
+            ...curMeasurementFiles
+        };
+        newMeasurementFiles[`${this.props.id}`].metadata.lesion_id = lesionID;
+        this.props.parent.setState({
+            measurements: newMeasurementFiles
+        });
+
+        let curLesionMap = this.props.container.correspondingLesions;
+        let newLesionMap = {
+            ...curLesionMap,
+        };
+        newLesionMap[`${this.props.id}`] = lesionID;
+        this.props.container.setState({
+            correspondingLesions: newLesionMap,
+        });
     }
     // UTILITIES
 
     toggle(e) {
         e.preventDefault()
         this.setState({show: !this.state.show})
+    }
+
+    handleGetPreviousLesion(e) {
+        e.preventDefault();
+        console.log(this.props.container.state.measurements);
+        let lastLesID = this.props.container.state.correspondingLesions[`${this.props.id - 1}`];
+        // if (lastLesID == null) return;
+        this.setState({
+            lesion_id: lastLesID,
+        });
+
+        console.log(lastLesID);
     }
 
     render() {
@@ -323,6 +353,7 @@ export default class Measurement extends React.Component {
                                         <input type="button"
                                                 className="form-control form-control-lg btn btn-outline-primary btn-lg "
                                                 id="useprev" value="Use Previous" name="useprev" data-id="0"
+                                                onClick={this.handleGetPreviousLesion.bind(this)}
                                                 />
                                     </div>
                                 </div>

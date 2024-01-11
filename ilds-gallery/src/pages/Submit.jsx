@@ -2,7 +2,7 @@ import React from "react";
 import ImageUploadField from "../components/submitComponents/ImageUploadField";
 import PatientInfoField from "../components/submitComponents/PatientInfoField";
 import axios from "axios";
-import { Case, ImageMetadata, Lesion, Measurement, Participant, SERVER_ENDPOINT } from "../utilities/Structures";
+import { Case, ImageMetadata, Lesion, Metadata, Participant, SERVER_ENDPOINT } from "../utilities/Structures";
 
 export default class Submit extends React.Component {
     searchQuery = "test";
@@ -37,10 +37,11 @@ export default class Submit extends React.Component {
                     image: '',
                     image_file: '',
                     show: true,
+                    metadata: new Metadata(),
                 }
             },
             measurement_metadata: {
-                0: new Measurement(),
+                0: new Metadata(),
             },
             lesions: {},
         };
@@ -275,6 +276,14 @@ export default class Submit extends React.Component {
     async handleUpload(e) {
         e.preventDefault();
         console.log(this.state);
+        const formData = new FormData();
+        let imageArr = Object.values(this.state.measurements).forEach((measurement) => {
+            // TODO: Set fieldname to image ID
+            formData.append("abc", measurement.image);
+        });
+        console.log(formData);
+        // await this.uploadICDEntities(this.state.entities);
+        await axios.post(`${SERVER_ENDPOINT}/upload`, formData, {});
         return;
         // TODO: REMOVE TEMP TESTING
 
@@ -283,8 +292,7 @@ export default class Submit extends React.Component {
             alert("One or more fields are empty\n Please double check before resubmitting");
             return;
         }
-        const formData = new FormData();
-        formData.append("image", this.state.image);
+        formData.append("image", imageArr);
         formData.append("case", JSON.stringify(this.state.case));
         formData.append("imageMetadata", JSON.stringify(this.state.metadata));
         await this.uploadICDEntities(this.state.entities);

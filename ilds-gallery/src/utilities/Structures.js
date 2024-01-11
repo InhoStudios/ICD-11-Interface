@@ -36,7 +36,7 @@ export class Lesion {
     severity;
 }
 
-export class Measurement {
+export class Metadata {
     measurement_id;
     lesion_id;
     filetype;

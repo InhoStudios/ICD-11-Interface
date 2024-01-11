@@ -1,6 +1,7 @@
 import React from "react";
 import ImageUploadFragment from "./ImageUploadFragment";
 import Measurement from "./Measurement";
+import { Metadata } from "../../utilities/Structures";
 
 export default class ImageUploadField extends React.Component {
 
@@ -9,6 +10,7 @@ export default class ImageUploadField extends React.Component {
 
         this.state = {
             measurements: [],
+            correspondingLesions: {},
             idCounter: 0,
         };
     }
@@ -18,6 +20,7 @@ export default class ImageUploadField extends React.Component {
             measurements: [...prevState.measurements, 
                 <Measurement 
                     id={prevState.idCounter} 
+                    container={this}
                     {...this.props} />
                 ],
             idCounter: prevState.idCounter + 1,
@@ -30,19 +33,20 @@ export default class ImageUploadField extends React.Component {
         newMeasurementFiles[`${this.state.idCounter - 1}`] = {
             image: '',
             image_file: '',
-        }
+            metadata: new Metadata(),
+        };
         await this.props.parent.setState({
             measurements: newMeasurementFiles,
         });
 
-        let curMeasurements = this.props.parent.state.measurement_metadata;
-        let newMeasurements = {
-            ...curMeasurements,
-        };
-        newMeasurements[`${this.state.idCounter - 1}`] = new Measurement();
-        await this.props.parent.setState({
-            measurement_metadata: newMeasurements,
-        });
+        // let curMeasurements = this.props.parent.state.measurement_metadata;
+        // let newMeasurements = {
+        //     ...curMeasurements,
+        // };
+        // newMeasurements[`${this.state.idCounter - 1}`] = new Measurement();
+        // await this.props.parent.setState({
+        //     measurement_metadata: newMeasurements,
+        // });
         
         let nextID = `imgUpload_${this.state.idCounter - 1}`;
         document.getElementById(nextID).click();
