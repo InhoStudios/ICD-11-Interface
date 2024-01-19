@@ -21,20 +21,18 @@ class AnatomyMap():
         for row in rows:
             row_text = str(row).replace("<tr>", "").replace("<td>", "").replace("</tr>", "")
             columns = row_text.split('</td>')
-            col_number = 0
             index = 0
-            for column in columns:
-                if (column.replace(" ", "") != ""):
-                    if (col_number == 0):
-                        index = column.split("</a>")[-1]
-                    else:
-                        item = {
-                            'site': column[1:],
-                            'level': int(col_number),
-                            'index': int(index)
-                        }
-                        self.anatomic_sites.append(item)
-                col_number += 1
+            for col_number, column in enumerate(columns):
+                col_title = column[1:].strip()
+                if (col_number == 0):
+                    index = column.split("<a")[0]
+                elif (col_title != ''):
+                    item = {
+                        'site': column[1:],
+                        'level': int(col_number),
+                        'index': int(index)
+                    }
+                    self.anatomic_sites.append(item)
         
         # for site in self.anatomic_sites:
         #     site['parent'] = self.get_parent_site(site['index'])
@@ -55,7 +53,11 @@ class AnatomyMap():
         parent_site: dict
             Dictionary of the parent anatomic site
         """
-        parent_site = "None"
+        parent_site = {
+            'site': "TOP_LEVEL",
+            'level': 0,
+            'index': 0
+        }
         index_level = self.anatomic_sites[index-1]['level']
         for site in self.anatomic_sites:
             if site['level'] == index_level-1:
