@@ -1,6 +1,5 @@
 import React from "react";
 import { ANATOMIC_SITES } from "../utilities/Structures";
-import CopyComponent from "./CopyComponent";
 
 export default class Modal extends React.Component {
     render() {
@@ -68,18 +67,12 @@ export default class Modal extends React.Component {
                                     <div className="row mb-5">
                                         <img className="img-fluid" src={`${process.env.PUBLIC_URL}/amap.png`}/>
                                     </div>
-                                    <div className="row">
-                                        <div className="col-lg-6">
-                                            <span>
-                                                Imaging Modality: {this.props.image.modality}
-                                            </span>
-                                        </div>
-                                        <div className="col-lg-6">
-                                            <span>
-                                                Patient ID: <CopyComponent value={this.props.image.participant_id} />
-                                            </span>
-                                        </div>
-                                    </div>
+
+                                    <span>
+                                        Patient ID: <strong>{this.props.image.participant_id}</strong>
+                                        <br/>
+                                        Imaging Modality: {this.props.image.modality}
+                                    </span>
                                     {/* <div className="row">
                                         <div className="col-lg-4">
                                             <span>

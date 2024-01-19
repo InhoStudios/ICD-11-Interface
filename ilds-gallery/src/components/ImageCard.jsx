@@ -28,7 +28,7 @@ export default class ImageCard extends React.Component {
                             <div className="open-modal">
                                 <a className="icon" onClick={(e) => {
                                     e.preventDefault();
-                                    this.openModal(this.props.image.img_id);
+                                    this.openModal(this.props.image.measurement_id);
                                 }}>
                                     <FontAwesomeIcon icon={faExpandAlt} />
                                 </a>

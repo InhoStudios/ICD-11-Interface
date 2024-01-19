@@ -1,11 +1,15 @@
 import React from "react";
-
+import CopyComponent from "../CopyComponent";
 export default class PatientInfoField extends React.Component {
+
     render() {
         return (
             <div class="mb-4">
                 <h4 className="mb-4">Patient Information</h4>
-                <p>Participant ID: {this.props.participant.participant_id}</p>
+                <div className="col-lg-12 mb-2">
+                    <span>Participant ID:</span> 
+                    <CopyComponent value={this.props.participant.participant_id} />
+                </div>
                 <div className="row">
                     <div className="col-lg-6">
                         <div className="mb-3 row">

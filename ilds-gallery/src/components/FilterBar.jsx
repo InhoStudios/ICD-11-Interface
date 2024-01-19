@@ -18,6 +18,7 @@ export default class FilterBar extends React.Component {
     }
 
     async getEntitiesFromDB() {
+        return;
         let entities = await fetch(`${SERVER_ENDPOINT}/db_select?values=distinct e.entity_title, e.entity_id&from=ICD_Entity e, Lesion_Categories c&where=c.entity_id=e.entity_id`)
             .then((data) => data.json())
             .catch((err) => console.log(err));
