@@ -49,8 +49,7 @@ async function insertArray(into, values) {
 }
 
 async function insertParticipant(part) {
-    let query = `INSERT IGNORE INTO Participant (participant_id, birth_date, gender, skin_type, ethnicity) 
-        VALUES ("${part.participant_id}", ${part.birth_date}, STR_TO_DATE("${part.gender}", "%m-%Y"), ${part.skin_type}, "${part.ethnicity}");`
+    let query = `INSERT IGNORE INTO Participant (participant_id, birth_date, gender, skin_type, ethnicity) VALUES ("${part.participant_id}", ${part.birth_date}, STR_TO_DATE("${part.gender}", "%m-%Y"), ${part.skin_type}, "${part.ethnicity}");`
     console.log(query);
     return await postQuery(query);
 }

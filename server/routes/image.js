@@ -5,37 +5,8 @@ var router = express.Router();
 
 router.get('/', async (req, res, next) => {
     // TODO: REMOVE STUB CODE
-    res.send([
-        {
-            url:"https://picsum.photos/640",
-            participant_id: "PTG231123A",
-            entity_title:"Test Diagnosis",
-            img_id:"1234",
-            user_selected_entity:"abcd1234",
-            modality:"Clinical",
-            anatomic_site:199,
-        },
-        {
-            url:"https://picsum.photos/450",
-            participant_id: "PTG231123B",
-            entity_title:"Another Diagnosis",
-            img_id:"1235",
-            user_selected_entity:"abcde345",
-            modality:"Dermoscopy",
-            anatomic_site:199,
-        },
-        {
-            url:"https://picsum.photos/540",
-            participant_id: "PTG231123B",
-            entity_title:"Woah, Slow Down",
-            img_id:"1236",
-            user_selected_entity:"nope",
-            modality:"Clinical",
-            anatomic_site:199,
-        }
-    ]);
-    // let results = await getImagesFromRequest(req);
-    // res.send(results);
+    let results = await getImagesFromRequest(req);
+    res.send(results);
 });
 
 router.get('/download', async(req, res, next) => {
@@ -82,13 +53,18 @@ async function getImagesFromRequest(req) {
     // TODO: body site from image
     let site = req.query.site ? `l.anatomic_site=${req.query.site} and a.anatomic_site=l.anatomic_site` : "true";
 
-    let query = `select p.participant_id, m.measurement_id, l.diagnosis_entity, e.entity_title, l.anatomic_site, m.filepath, 
-        p.birth_date, p.sex, l.severity, p.skin_type, p.tags, m.modality, a.anatomic_site
-        from Participant p, Measurement m, Lesion l, ICD_Entity e, Participates_in pi, Study s, Collected_Measurements cm, Anatomic_Site a
-        where m.measurement_id=cm.measurement_id and s.study_id=cm.study_id and pi.study_id=s.study_id and p.participant_id=pi.participant_id and 
-        ${entityCode} and ${view} and ${severity} and ${modality} 
-        and ${sex} and ${site};
-        `;
+    let query = `SELECT CONCAT('${process.env.IP}:${process.env.PORT}', m.filepath) as url, p.participant_id as participant_id, ie.entity_title as entity_title, m.measurement_id as measurement_id, m.modality as modality, l.anatomic_site as anatomic_site
+    FROM Measurement m, Lesion l, Participant p, ICD_Entity ie
+    WHERE m.lesion_id = l.lesion_id AND l.participant_id = p.participant_id AND l.diagnosis_entity = ie.entity_id
+    AND ${entityCode} AND ${severity} AND ${modality}`;
+    // let query = `select p.participant_id, m.measurement_id, l.diagnosis_entity, e.entity_title, l.anatomic_site, m.filepath, 
+    // p.birth_date, p.sex, l.severity, p.skin_type, p.tags, m.modality, a.anatomic_site
+    // from Participant p, Measurement m, Lesion l, ICD_Entity e, Participates_in pi, Study s, Collected_Measurements cm, Anatomic_Site a
+    // where m.measurement_id=cm.measurement_id and s.study_id=cm.study_id and pi.study_id=s.study_id and p.participant_id=pi.participant_id and 
+    // ${entityCode} and ${view} and ${severity} and ${modality} 
+    // and ${sex} and ${site};
+    // `;
+    console.log(query);
     let results = await sql.postQuery(query);
     return results;
 }

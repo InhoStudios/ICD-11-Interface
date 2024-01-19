@@ -35,7 +35,7 @@ export default class ImageCard extends React.Component {
                             </div>
                         </div>
                         <div className="card-body">
-                            <span>http://id.who.int/icd/entity/{this.props.image.user_selected_entity}</span>
+                            <span>http://id.who.int/icd/entity/{this.props.image.entity_id}</span>
                             <h4>{this.props.image.entity_title}</h4>
                             <p></p>
                         </div>

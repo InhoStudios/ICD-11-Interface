@@ -277,6 +277,8 @@ export default class Submit extends React.Component {
     async handleUpload(e) {
         e.preventDefault();
         console.log(this.state);
+        await this.uploadICDEntities(this.state.entities);
+        
         const formData = new FormData();
         let meas_id = 0;
         let imageArr = Object.values(this.state.measurements).forEach((measurement) => {
@@ -288,7 +290,6 @@ export default class Submit extends React.Component {
         formData.append("participant", JSON.stringify(this.state.participant));
         formData.append("lesions", JSON.stringify(this.state.lesions));
         formData.append("attendant", this.state.attending_investigator);
-        // await this.uploadICDEntities(this.state.entities);
         await axios.post(`${SERVER_ENDPOINT}/upload`, formData, {});
         return;
         // TODO: REMOVE TEMP TESTING

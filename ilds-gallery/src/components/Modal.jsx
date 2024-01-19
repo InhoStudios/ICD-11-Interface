@@ -25,7 +25,7 @@ export default class Modal extends React.Component {
                             <div className="mx-2 row">
                                 <div className="col-lg-10">
                                     <p>
-                                        ICD-11 Entity: <strong>http://id.who.int/icd/entity/{this.props.image.user_selected_entity}</strong>
+                                        ICD-11 Entity: <strong>http://id.who.int/icd/entity/{this.props.image.entity_id}</strong>
                                     </p>
                                     <h1 className="mb-4"><u>{this.props.image.entity_title}</u></h1>
                                     {/* <h5 className="mb-2">Body site: {

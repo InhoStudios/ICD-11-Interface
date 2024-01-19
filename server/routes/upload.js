@@ -39,11 +39,14 @@ router.post('/', upload.any(), async (req, res, next) => {
         });
     } else {
         let promises = [];
+        let lesion_categories = [];
+        let additional_entities = [];
 
         let measurements = JSON.parse(req.body.measurements);
         let participant = JSON.parse(req.body.participant);
         let lesions = JSON.parse(req.body.lesions);
         let attendant = req.body.attendant;
+
         console.log(req.files, measurements, participant, attendant);
 
         // construct filepath reference table
@@ -61,92 +64,62 @@ router.post('/', upload.any(), async (req, res, next) => {
         }
         promises.push(sql.insertParticipant(participantToUpload));
 
+        for (let [id, lesion] of Object.entries(lesions)) {
+            let ancestors = lesion.ancestors;
+            let lesionToUpload = {
+                lesion_id: `"${id}"`,
+                participant_id: `"${participant.participant_id}"`,
+                diagnosis_entity: `"${lesion.diagnosis_entity}"`,
+                // morphology: `"${}"`,
+                anatomic_site: `"${0}"`,
+                severity: `"${lesion.severity}"`,
+                les_size: `"${lesion.size}"`,
+            }
+            promises.push(sql.insert("Lesion", lesionToUpload));
+
+            for (let ancestor of ancestors) {
+                let ancestorID = ancestor.replace("http://id.who.int/icd/entity/","");
+                if (ancestorID === "979408586" || 
+                    ancestorID === "448895267" ||
+                    ancestorID === "455013390" ||
+                    ancestorID === "1920852714") {
+                        continue;
+                    }
+                let fullEntity = await icd.getEntity(ancestorID, "ancestor");
+    
+                let entity = {
+                    entity_id: `'${ancestorID}'`,
+                    entity_title: `'${fullEntity.title["@value"].replace("<em class='found'>","").replace("</em>","")}'`,
+                };
+                additional_entities.push(entity);
+    
+                lesion_ancestor = {
+                    lesion_id: `'${id}'`,
+                    entity_id: `'${ancestorID}'`,
+                };
+                lesion_categories.push(lesion_ancestor);
+            }
+        }
+
         for (let measurement of Object.values(measurements)) {
             let metadata = measurement.metadata;
             let metadataToUpload = {
                 measurement_id: `"${metadata.measurement_id}"`,
                 lesion_id: `"${metadata.lesion_id}"`,
                 filetype: `"${metadata.filetype}"`,
-                filepath: `"${files[metadata.measurement_id]}"`,
+                filepath: `"${files[metadata.measurement_id].replaceAll("\\","/")}"`,
                 modality: `"${metadata.modality}"`,
                 attendant: `"${attendant}"`,
             }
-            promises.push(sql.insert("Measurement", metadataToUpload))
+            promises.push(sql.insert("Measurement", metadataToUpload));
         }
 
-        for (let [id, lesion] of Object.entries(lesions)) {
-
-        }
-
-        return res.send({
-            success: true
-        });
-
-        let caseBody = JSON.parse(req.body.case);
-        let caseID = uuidv4();
-
-        let imageBody = JSON.parse(req.body.imageMetadata);
-        let imageID = uuidv4();
-
-        let ancestors = caseBody.ancestors;
-        let caseCategories = [];
-        let additionalEntities = [];
-
-        for (let ancestor of ancestors) {
-            let ancestorID = ancestor.replace("http://id.who.int/icd/entity/","");
-            if (ancestorID === "979408586" || 
-                ancestorID === "448895267" ||
-                ancestorID === "455013390" ||
-                ancestorID === "1920852714") {
-                    continue;
-                }
-            let fullEntity = await icd.getEntity(ancestorID, "ancestor");
-            console.log(JSON.stringify(fullEntity));
-
-            let entity = {
-                entity_title: `'${fullEntity.title["@value"].replace("<em class='found'>","").replace("</em>","")}'`,
-                entity_id: `'${ancestorID}'`
-            };
-            additionalEntities.push(entity);
-
-            caseAncestorPair = {
-                case_id: `'${caseID}'`,
-                entity_id: `'${ancestorID}'`,
-            };
-            caseCategories.push(caseAncestorPair);
-        }
-
-        console.log(req.file.path)
-        img_file_path = req.file.path.replaceAll("\\", "/")
-
-        let url = `${req.protocol}://${req.hostname}:8081/${img_file_path}`
-
-        let uploadedCase = {
-            case_id: `'${caseID}'`,
-            age: caseBody.age,
-            sex: `'${caseBody.sex}'`,
-            history: caseBody.history == "t" ? 1 : 0,
-            user_selected_entity: caseBody.userEntity,
-            severity: `'${caseBody.severity}'`
-        };
-        let uploadedImage = {
-            img_id: `'${imageID}'`,
-            filename: `'${req.file.filename}'`,
-            case_id: `'${caseID}'`,
-            url: `'${url}'`,
-            modality: `'${imageBody.modality}'`,
-            anatomic_site: imageBody.anatomicSite
-        }
-        
-        promises.push(sql.insert("Cases", uploadedCase));
-        promises.push(sql.insert("Image", uploadedImage));
-        promises.push(sql.insertArray("ICD_Entity", additionalEntities));
+        promises.push(sql.insertArray("ICD_Entity", additional_entities));
 
         await Promise.all(promises).then(() => {
-            sql.insertArray("Case_Categories", caseCategories);
+            sql.insertArray("Lesion_Categories", lesion_categories);
         });
 
-        console.log(`Image received: ${req.file.filename}\nImage hosted at ${req.protocol}://${req.hostname}:9000/${img_file_path}`);
         return res.send({
             success: true
         });

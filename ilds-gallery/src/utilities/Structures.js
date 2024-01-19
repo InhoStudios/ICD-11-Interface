@@ -36,6 +36,7 @@ export class Lesion {
     anatomic_site;
     severity;
     size;
+    ancestors;
 
     constructor() {
         this.size = 0;

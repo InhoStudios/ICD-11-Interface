@@ -184,9 +184,11 @@ export default class Measurement extends React.Component {
         // updateCase.title = entity.title["@value"].replace("<em class='found'>","").replace("</em>","");
         // updateCase.userEntity = id;
         // updateCase.ancestors = entity.ancestor;
-        // console.log(entity.ancestor);
+        console.log(entity.ancestor);
         // caller.setState({selectedOption: entity, case: updateCase});
         caller.setState({selectedOption: entity});
+        let part = this.props.parent.state.participant;
+
 
         let definitionField = document.getElementById(`entityDefinition${this.props.id}`);
         definitionField.style.display = "block";
@@ -197,6 +199,7 @@ export default class Measurement extends React.Component {
         lesion.lesion_id = lesionID;
         lesion.diagnosis_entity = id;
         lesion.diagnosis_title = this.state.query;
+        lesion.ancestors = entity.ancestor;
         this.props.parent.setState({
             lesions: {
                 ...this.props.parent.state.lesions,
@@ -207,7 +210,6 @@ export default class Measurement extends React.Component {
             lesion_id: lesionID
         });
 
-        // TODO: figure out whats happening here
         let curMeasurementFiles = this.props.parent.state.measurements;
         let newMeasurementFiles = {
             ...curMeasurementFiles
