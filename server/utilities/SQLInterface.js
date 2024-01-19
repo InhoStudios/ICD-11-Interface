@@ -7,7 +7,7 @@ async function connect() {
         host: 'localhost',
         user: process.env.SQL_USER,
         password: process.env.SQL_PASSWORD,
-        database: 'mmods',
+        database: 'ildsdb',
         connectionLimit: 10,
         maxIdle: 10, // max idle connections, the default value is the same as `connectionLimit`
         idleTimeout: 60000, // idle connections timeout, in milliseconds, the default value 60000
@@ -48,9 +48,17 @@ async function insertArray(into, values) {
     return await postQuery(query);
 }
 
+async function insertParticipant(part) {
+    let query = `INSERT IGNORE INTO Participant (participant_id, birth_date, gender, skin_type, ethnicity) 
+        VALUES ("${part.participant_id}", ${part.birth_date}, STR_TO_DATE("${part.gender}", "%m-%Y"), ${part.skin_type}, "${part.ethnicity}");`
+    console.log(query);
+    return await postQuery(query);
+}
+
 module.exports = {
     postQuery: postQuery,
     insert: insert,
     insertArray: insertArray,
+    insertParticipant: insertParticipant,
     select: select,
 };

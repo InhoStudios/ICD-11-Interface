@@ -6,7 +6,7 @@ export default class Measurement extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            lesion_id: '',
+            lesion_id: 'empty',
             show: false,
             image: '',
             image_file: '',
@@ -28,6 +28,34 @@ export default class Measurement extends React.Component {
         }
     }
 
+    componentDidMount() {
+        let byte = Math.round(Math.random() * 255).toString(16).padStart(2, '0');
+        let lesionID = this.props.parent.state.participant.participant_id + byte;
+        let lesion = new Lesion();
+        lesion.lesion_id = lesionID;
+
+        let createMetadata = new Metadata();
+        let newMeasurement = {
+            metadata: createMetadata,
+        }
+        newMeasurement.metadata.measurement_id = `${this.state.lesion_id}${this.props.id}`;
+
+        this.props.parent.setState({
+            lesions: {
+                ...this.props.parent.state.lesions, 
+                [lesionID]: lesion
+            },
+            measurements: {
+                ...this.props.parent.state.measurements, 
+                [this.props.id]: newMeasurement
+            },
+        });
+        
+        this.setState({
+            lesion_id: lesionID
+        });
+    }
+
     handleSiteSearchUpdate(e) {
         e.preventDefault();
         document.querySelectorAll(`.asites_${this.props.id}`).forEach(a => a.style.display = "block");
@@ -40,7 +68,7 @@ export default class Measurement extends React.Component {
             } else {
                 a.style.display = "none";
             }
-        })
+        });
     }
 
     handleUpdateSite(site) {
@@ -94,23 +122,15 @@ export default class Measurement extends React.Component {
             ...curMeasurementFiles
         };
         newMeasurementFiles[`${this.props.id}`] = {
+            ...newMeasurementFiles[`${this.props.id}`],
             image: e.target.files[0],
             image_file: fileURL,
-            metadata: new Metadata(),
         }
         newMeasurementFiles[`${this.props.id}`].metadata.filetype = e.target.files[0].type;
+        newMeasurementFiles[`${this.props.id}`].metadata.measurement_id = `${this.state.lesion_id}${this.props.id}`;
         this.props.parent.setState({
             measurements: newMeasurementFiles
         });
-        
-        // let curMeasurements = this.props.parent.state.measurement_metadata;
-        // let newMeasurements = {
-        //     ...curMeasurements,
-        // };
-        // newMeasurements[`${this.props.id}`].filetype = e.target.files[0].type;
-        // this.props.parent.setState({
-        //     measurement_metadata: newMeasurements,
-        // });
         
         console.log(this.props.parent.state.measurements);
     }
@@ -118,10 +138,10 @@ export default class Measurement extends React.Component {
     handleQueryUpdate(e) {
         e.preventDefault();
         clearTimeout(this.state.searchTimeout);
-        this.setState({ searchTimeout: setTimeout(() => this.performSearch(e.target.value, this), 300) });
+        this.setState({ searchTimeout: setTimeout(() => this.performSearch(e.target.value, this, this.props.parent), 300) });
     }
 
-    async performSearch(input, caller) {
+    async performSearch(input, caller, parent) {
         let result = await fetch(`${SERVER_ENDPOINT}/search?query=${input}`)
             .then((data) => data.json())
             .catch((err) => console.log(err));
@@ -130,6 +150,7 @@ export default class Measurement extends React.Component {
         for (let entity of sortedEntities) {
             hierarchicalEntities = hierarchicalEntities.concat(this.DFSEntities(entity, 0));
         }
+        parent.setState({entities: hierarchicalEntities});
         caller.setState({entities: hierarchicalEntities, query: input});
     }
 
@@ -171,16 +192,19 @@ export default class Measurement extends React.Component {
         definitionField.style.display = "block";
 
         // create new lesion
-        // TODO: Handle creating a new lesion ID
-        let byte = Math.round(Math.random() * 255).toString(16).padStart(2, '0');
-        let lesionID = this.props.parent.state.participant.participant_id + byte;
-        let lesion = new Lesion();
+        let lesionID = this.state.lesion_id;
+        let lesion = this.props.parent.state.lesions[this.state.lesion_id];
         lesion.lesion_id = lesionID;
+        lesion.diagnosis_entity = id;
+        lesion.diagnosis_title = this.state.query;
         this.props.parent.setState({
             lesions: {
                 ...this.props.parent.state.lesions,
                 [lesionID]: lesion
             }
+        });
+        this.setState({
+            lesion_id: lesionID
         });
 
         // TODO: figure out whats happening here
@@ -188,7 +212,7 @@ export default class Measurement extends React.Component {
         let newMeasurementFiles = {
             ...curMeasurementFiles
         };
-        newMeasurementFiles[`${this.props.id}`].metadata.lesion_id = lesionID;
+        newMeasurementFiles[`${this.props.id}`].metadata.lesion_id = this.state.lesion_id;
         this.props.parent.setState({
             measurements: newMeasurementFiles
         });
@@ -197,7 +221,7 @@ export default class Measurement extends React.Component {
         let newLesionMap = {
             ...curLesionMap,
         };
-        newLesionMap[`${this.props.id}`] = lesionID;
+        newLesionMap[`${this.props.id}`] = this.state.lesion_id;
         this.props.container.setState({
             correspondingLesions: newLesionMap,
         });
@@ -209,14 +233,58 @@ export default class Measurement extends React.Component {
         this.setState({show: !this.state.show})
     }
 
+    handleUpdateSeverity(e) {
+        e.preventDefault();
+        let currentLesions = this.props.parent.state.lesions;
+        let updatedLesions = {
+            ...currentLesions
+        };
+        updatedLesions[`${this.state.lesion_id}`].severity = e.target.value;
+        console.log(updatedLesions[`${this.state.lesion_id}`]);
+        console.log(this.state.lesion_id);
+        console.log(`handleUpdateSeverity(${e.target.value})`);
+        this.props.parent.setState({
+            lesions: updatedLesions,
+        });
+        console.log(this.props.parent.state.lesions[`${this.state.lesion_id}`].severity);
+    }
+
+    handleUpdateSize(e) {
+        e.preventDefault();
+        let currentLesions = this.props.parent.state.lesions;
+        let updatedLesions = {
+            ...currentLesions
+        };
+        updatedLesions[`${this.state.lesion_id}`].size = e.target.value;
+        console.log(`handleUpdateSize(${e.target.value})`);
+        this.props.parent.setState({
+            lesions: updatedLesions,
+        });
+    }
+
     handleGetPreviousLesion(e) {
+        // TODO: Resolve "get_previous_lesion"
         e.preventDefault();
         console.log(this.props.container.state.measurements);
         let lastLesID = this.props.container.state.correspondingLesions[`${this.props.id - 1}`];
-        // if (lastLesID == null) return;
+        let lastLesion = this.props.parent.state.lesions[lastLesID];
+        console.log(lastLesID, lastLesion);
+        if (lastLesID == undefined) return;
         this.setState({
             lesion_id: lastLesID,
+            query: lastLesion.diagnosis_title,
         });
+        
+        let curMeasurementFiles = this.props.parent.state.measurements;
+        let newMeasurementFiles = {
+            ...curMeasurementFiles
+        };
+        newMeasurementFiles[`${this.props.id}`].metadata.lesion_id = lastLesID;
+        this.props.parent.setState({
+            measurements: newMeasurementFiles
+        });
+
+
 
         console.log(lastLesID);
     }
@@ -296,7 +364,7 @@ export default class Measurement extends React.Component {
                         </div>
                         <div className="col-lg-6 mb-3">
                             {
-                                this.props.id == 0 ?
+                                true ? // TODO: Add "use previous lesion" functionality back
 
                                 <div className="form-group row">
                                     <div className="col-lg-12 mb-3 dropdown">
@@ -349,13 +417,13 @@ export default class Measurement extends React.Component {
                                             </div>
                                     </div>
                                     
-                                    <div className="col-lg-4 mb-3">
+                                    {/* <div className="col-lg-4 mb-3">
                                         <input type="button"
                                                 className="form-control form-control-lg btn btn-outline-primary btn-lg "
                                                 id="useprev" value="Use Previous" name="useprev" data-id="0"
                                                 onClick={this.handleGetPreviousLesion.bind(this)}
                                                 />
-                                    </div>
+                                    </div> */}
                                 </div>
                             }
                             <div className="row">
@@ -367,9 +435,9 @@ export default class Measurement extends React.Component {
                                     }</p>
                                 </div>
                             </div>
-                            <div className="row">
+                            {/* <div className="row">
                                 <img className="img-fluid" src={`${process.env.PUBLIC_URL}/amap.png`}/>
-                            </div>
+                            </div> */}
                             <div className="row">
                                 
                                 {/* <div className="col-lg-6 mb-3 dropdown">
@@ -413,9 +481,9 @@ export default class Measurement extends React.Component {
                                     <div className="row mb-3">
                                         <div className="form-group">
                                             <select class="form-control form-control-lg" name="severity" id="severity"
-                                                onChange={this.props.updateSeverity}
+                                                onChange={this.handleUpdateSeverity.bind(this)}
                                                 required>
-                                                <option value="" selected disabled hidden>Benign or Malignant ↓</option>
+                                                <option value="0" selected disabled hidden>Benign or Malignant ↓</option>
                                                 <option value="b">Benign</option>
                                                 <option value="m">Malignant</option>
                                             </select>
@@ -437,7 +505,10 @@ export default class Measurement extends React.Component {
                                         <div className="form-group">
                                             <input type="number" className="form-control form-control-lg" id="size"
                                                     name="size" placeholder="Lesion size (mm)" min="0"
-                                                    onChange={this.props.updateSize}/>
+                                                    // value={
+                                                    //     this.props.parent.state.lesions[`${this.state.lesion_id}`].size
+                                                    // }
+                                                    onChange={this.handleUpdateSize.bind(this)}/>
                                         </div>
                                     </div>
                                 </div>

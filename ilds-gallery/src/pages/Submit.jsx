@@ -225,6 +225,7 @@ export default class Submit extends React.Component {
         console.log(`handleUpdateMOB(${e.target.value})`);
         let date = Date.parse(e.target.value);
         console.log(date);
+        this.updateParticipant("mob", e.target.value);
     }
     
     handleUpdateSkinType(e) {
@@ -277,11 +278,16 @@ export default class Submit extends React.Component {
         e.preventDefault();
         console.log(this.state);
         const formData = new FormData();
+        let meas_id = 0;
         let imageArr = Object.values(this.state.measurements).forEach((measurement) => {
             // TODO: Set fieldname to image ID
-            formData.append("abc", measurement.image);
+            formData.append(`${measurement.metadata.lesion_id}${meas_id}`, measurement.image);
+            meas_id++;
         });
-        console.log(formData);
+        formData.append("measurements", JSON.stringify(this.state.measurements));
+        formData.append("participant", JSON.stringify(this.state.participant));
+        formData.append("lesions", JSON.stringify(this.state.lesions));
+        formData.append("attendant", this.state.attending_investigator);
         // await this.uploadICDEntities(this.state.entities);
         await axios.post(`${SERVER_ENDPOINT}/upload`, formData, {});
         return;
@@ -357,7 +363,7 @@ export default class Submit extends React.Component {
                                 updateMOB={this.handleUpdateMOB.bind(this)}
                                 updateGender={this.handleUpdateGender.bind(this)}
                                 updateSkinType={this.handleUpdateSkinType.bind(this)}
-                                updateEthnicity={this.handleUpdateSkinType.bind(this)}
+                                updateEthnicity={this.handleUpdateEthnicity.bind(this)}
                                 updateHist={this.handleUpdateHist.bind(this)}
                                 participant={this.state.participant}
                             />

@@ -31,9 +31,16 @@ export class Participant {
 export class Lesion {
     lesion_id;
     diagnosis_entity;
+    diagnosis_title;
     morphology;
     anatomic_site;
     severity;
+    size;
+
+    constructor() {
+        this.size = 0;
+        this.severity = '0';
+    }
 }
 
 export class Metadata {

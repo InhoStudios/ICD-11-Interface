@@ -14,7 +14,7 @@ const storage = multer.diskStorage({
     filename: (req, file, cb) => {
         // TODO: Generate unique filename
         const ext = file.originalname.split(".").slice(-1)[0];
-        cb(null, `${uuidv4()}.${ext}`);
+        cb(null, `${file.fieldname}.${ext}`);
     }
 });
 
@@ -39,6 +39,45 @@ router.post('/', upload.any(), async (req, res, next) => {
         });
     } else {
         let promises = [];
+
+        let measurements = JSON.parse(req.body.measurements);
+        let participant = JSON.parse(req.body.participant);
+        let lesions = JSON.parse(req.body.lesions);
+        let attendant = req.body.attendant;
+        console.log(req.files, measurements, participant, attendant);
+
+        // construct filepath reference table
+        let files = {}
+        for (let file of req.files) {
+            files[file.fieldname] = file.path;
+        }
+
+        let participantToUpload = {
+            participant_id: `${participant.participant_id}`,
+            birth_date: `${participant.mob}`,
+            gender: `${participant.gender}`,
+            skin_type: `${participant.skin_type}`,
+            ethnicity: `${participant.ethnicity}`,
+        }
+        promises.push(sql.insertParticipant(participantToUpload));
+
+        for (let measurement of Object.values(measurements)) {
+            let metadata = measurement.metadata;
+            let metadataToUpload = {
+                measurement_id: `"${metadata.measurement_id}"`,
+                lesion_id: `"${metadata.lesion_id}"`,
+                filetype: `"${metadata.filetype}"`,
+                filepath: `"${files[metadata.measurement_id]}"`,
+                modality: `"${metadata.modality}"`,
+                attendant: `"${attendant}"`,
+            }
+            promises.push(sql.insert("Measurement", metadataToUpload))
+        }
+
+        for (let [id, lesion] of Object.entries(lesions)) {
+
+        }
+
         return res.send({
             success: true
         });
