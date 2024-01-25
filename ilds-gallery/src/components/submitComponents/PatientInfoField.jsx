@@ -1,10 +1,15 @@
 import React from "react";
-
+import CopyComponent from "../CopyComponent";
 export default class PatientInfoField extends React.Component {
+
     render() {
         return (
             <div class="mb-4">
                 <h4 className="mb-4">Patient Information</h4>
+                <div className="col-lg-12 mb-2">
+                    <span>Participant ID:</span> 
+                    <CopyComponent value={this.props.participant.participant_id} />
+                </div>
                 <div className="row">
                     <div className="col-lg-6">
                         <div className="mb-3 row">
@@ -15,36 +20,23 @@ export default class PatientInfoField extends React.Component {
                                             name="age" placeholder="Age" min="0"
                                             onChange={this.props.updateAge}/> */}
                                         <input type="month" className="form-control form-control-lg" 
-                                            value={this.props.participant.mob}/>
+                                            value={this.props.participant.mob}
+                                            onChange={this.props.updateMOB}/>
                                     </div>
                             </label>
                         </div>
                         <div className="mb-3 row">
                             <label>
-                                Birth Sex
+                                Gender
                                 <div className="form-group">
                                     <select class="form-control form-control-lg" name="severity" id="severity"
-                                        onChange={this.props.updateSex}
-                                        value={this.props.participant.sex}
+                                        onChange={this.props.updateGender}
+                                        value={this.props.participant.gender}
                                         required>
-                                        <option value="" selected disabled hidden>Choose patient declared sex ↓</option>
+                                        <option value="" selected disabled hidden>Choose patient declared gender ↓</option>
                                         <option value="f">Female</option>
                                         <option value="m">Male</option>
-                                    </select>
-                                </div>
-                            </label>
-                        </div>
-                        <div className="mb-3 row">
-                            <label>
-                                History
-                                <div className="form-group">
-                                    <select class="form-control form-control-lg" name="severity" id="severity"
-                                        onChange={this.props.updateHist}
-                                        onLoad={this.props.updateHist}
-                                        required>
-                                        <option value="" selected disabled hidden>Does the patient have a family history of this condition? ↓</option>
-                                        <option value="f">No, the patient does not have a family history of this condition</option>
-                                        <option value="t">Yes, the patient has a family history of this condition</option>
+                                        <option value="o">Other/Not listed</option>
                                     </select>
                                 </div>
                             </label>
@@ -54,32 +46,10 @@ export default class PatientInfoField extends React.Component {
                     <div className="col-lg-6">
                         <div className="mb-3 row">
                             <label>
-                                Eye Colour
-                                <div className="form-group">
-                                    <select class="form-control form-control-lg" name="eyecol" id="eyecol"
-                                        // onChange={this.props.updateSex}
-                                        value={this.props.participant.eye_colour}
-                                        required>
-                                        <option value="" selected disabled hidden>Choose eye colour ↓</option>
-                                        <option value="L">Light: Blue/Green/Grey</option>
-                                        <option value="M">Medium: Hazel/Medium Brown/Light Brown</option>
-                                        <option value="D">Dark: Dark Brown</option>
-                                        <option value="blue"hidden>Blue</option>
-                                        <option value="brown"hidden>Brown</option>
-                                        <option value="green"hidden>Green</option>
-                                        <option value="grey"hidden>Grey</option>
-                                        <option value="hazel"hidden>Hazel</option>
-                                        <option value="Other">Other</option>
-                                    </select>
-                                </div>
-                            </label>
-                        </div>
-                        <div className="mb-3 row">
-                            <label>
                                 Fitzpatrick Skin Type
                                 <div className="form-group">
                                     <select class="form-control form-control-lg" name="skintype" id="skintype"
-                                        // onChange={this.props.updateSex}
+                                        onChange={this.props.updateSkinType}
                                         value={this.props.participant.skin_type}
                                         required>
                                         <option value="" selected disabled hidden>Choose Fitzpatrick skin type ↓</option>
@@ -95,19 +65,22 @@ export default class PatientInfoField extends React.Component {
                         </div>
                         <div className="mb-3 row">
                             <label>
-                                Natural Hair Colour
+                                Ethnicity
                                 <div className="form-group">
-                                    <select class="form-control form-control-lg" name="severity" id="severity"
-                                        onChange={this.props.updateHist}
-                                        onLoad={this.props.updateHist}
-                                        value={this.props.participant.hair_colour}
+                                    <select class="form-control form-control-lg" name="ethnicity" id="ethnicity"
+                                        onChange={this.props.updateEthnicity}
                                         required>
-                                        <option value="" selected disabled hidden>Choose natural hair colour (at age 20) ↓</option>
-                                        <option value="black">Black</option>
-                                        <option value="darkbrown">Dark Brown</option>
-                                        <option value="lightbrown">Light Brown</option>
-                                        <option value="blonde">Blonde</option>
-                                        <option value="red">Red</option>
+                                        <option value="" selected disabled hidden>Choose the most appropriate option ↓</option>
+                                        <option value="black">Black or African American</option>
+                                        <option value="eastasian">East Asian</option>
+                                        <option value="latino">Latino</option>
+                                        <option value="middleeastern">Middle Eastern</option>
+                                        <option value="southasian">South Asian</option>
+                                        <option value="seasian">Southeast Asian</option>
+                                        <option value="pi">Pacific Islander</option>
+                                        <option value="white">White</option>
+                                        <option value="multi">I identify with two or more categories</option>
+                                        <option value="other">Other</option>
                                     </select>
                                 </div>
                             </label>

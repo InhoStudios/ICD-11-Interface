@@ -15,39 +15,57 @@ export const METHODS = {
 export class Participant {
     participant_id;
     mob;
-    sex;
-    eye_colour;
+    gender;
     skin_type;
     ethnicity;
-    hair_colour;
-    tags;
 
-    constructor(pid, mob, sex, eyecol, skintype, eth, hc) {
+    constructor(pid, mob, gender, skintype, eth) {
         this.participant_id = pid;
         this.mob = mob;
-        this.sex = sex;
-        this.eye_colour = eyecol;
+        this.gender = gender;
         this.skin_type = skintype;
         this.ethnicity = eth;
-        this.hair_colour = hc;
     }
 }
 
 export class Lesion {
     lesion_id;
     diagnosis_entity;
+    diagnosis_title;
     morphology;
     anatomic_site;
     severity;
+    size;
+    ancestors;
+
+    constructor() {
+        this.size = 0;
+        this.severity = 'b';
+        this.lesion_id = '';
+        this.diagnosis_entity = '';
+        this.diagnosis_title = '';
+        this.morphology = '';
+        this.anatomic_site = 0;
+    }
 }
 
-export class Measurement {
+export class Metadata {
     measurement_id;
-    lesion; // Lesion class
+    lesion_id;
+    filetype;
+    filepath;
     measurement_date;
-    is_lesion;
     modality;
-    operator;
+    attendant;
+    
+    iso;
+    aperture;
+    shutterspeed;
+    polarization;
+
+    constructor() {
+        this.lesion_id = 'empty';
+    }
 }
 
 export class Case {

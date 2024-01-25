@@ -28,14 +28,14 @@ export default class ImageCard extends React.Component {
                             <div className="open-modal">
                                 <a className="icon" onClick={(e) => {
                                     e.preventDefault();
-                                    this.openModal(this.props.image.img_id);
+                                    this.openModal(this.props.image.measurement_id);
                                 }}>
                                     <FontAwesomeIcon icon={faExpandAlt} />
                                 </a>
                             </div>
                         </div>
                         <div className="card-body">
-                            <span>http://id.who.int/icd/entity/{this.props.image.user_selected_entity}</span>
+                            <span>http://id.who.int/icd/entity/{this.props.image.entity_id}</span>
                             <h4>{this.props.image.entity_title}</h4>
                             <p></p>
                         </div>

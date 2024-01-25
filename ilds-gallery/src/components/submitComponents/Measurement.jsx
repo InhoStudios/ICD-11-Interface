@@ -1,15 +1,13 @@
 import React from "react";
-import { ANATOMIC_SITES, SERVER_ENDPOINT } from "../../utilities/Structures";
+import { ANATOMIC_SITES, Lesion, SERVER_ENDPOINT, Metadata } from "../../utilities/Structures";
 
 export default class Measurement extends React.Component {
 
     constructor(props) {
         super(props);
         this.state = {
-            anatomic: null,
-            modality: null,
-            lesion: null,
-            show: true,
+            lesion_id: 'empty',
+            show: false,
             image: '',
             image_file: '',
             visible: true, // is the entire field visible?
@@ -30,6 +28,34 @@ export default class Measurement extends React.Component {
         }
     }
 
+    componentDidMount() {
+        let byte = Math.round(Math.random() * 255).toString(16).padStart(2, '0');
+        let lesionID = this.props.parent.state.participant.participant_id + byte;
+        let lesion = new Lesion();
+        lesion.lesion_id = lesionID;
+
+        let createMetadata = new Metadata();
+        let newMeasurement = {
+            metadata: createMetadata,
+        }
+        newMeasurement.metadata.measurement_id = `${this.state.lesion_id}${this.props.id}`;
+
+        this.props.parent.setState({
+            lesions: {
+                ...this.props.parent.state.lesions, 
+                [lesionID]: lesion
+            },
+            measurements: {
+                ...this.props.parent.state.measurements, 
+                [this.props.id]: newMeasurement
+            },
+        });
+        
+        this.setState({
+            lesion_id: lesionID
+        });
+    }
+
     handleSiteSearchUpdate(e) {
         e.preventDefault();
         document.querySelectorAll(`.asites_${this.props.id}`).forEach(a => a.style.display = "block");
@@ -42,7 +68,7 @@ export default class Measurement extends React.Component {
             } else {
                 a.style.display = "none";
             }
-        })
+        });
     }
 
     handleUpdateSite(site) {
@@ -63,13 +89,22 @@ export default class Measurement extends React.Component {
                 a.style.display = "none";
             }
         })
-        this.props.updateImgtype(val);
+        this.handleUpdateImgType(val);
     }
 
     handleUpdateImgType(val) {
         this.setState({modality: val});
         document.querySelectorAll(`.itype_${this.props.id}`).forEach(a => a.style.display = "none");
-        this.props.updateImgtype(val);
+        
+        let curMeasurements = this.props.parent.state.measurements;
+        let newMeasurements = {
+            ...curMeasurements,
+        };
+        console.log(newMeasurements[`${this.props.id}`]);
+        newMeasurements[`${this.props.id}`].metadata.modality = val;
+        this.props.parent.setState({
+            measurements: newMeasurements,
+        });
     }
 
     // DIRECT INPUT HANDLERS
@@ -77,18 +112,36 @@ export default class Measurement extends React.Component {
     handleUpdateImage(e) {
         console.log(`handleUpdateImage()`);
         let fileURL = URL.createObjectURL(e.target.files[0]);
-        this.setState({ image: e.target.files[0], image_file: fileURL });
-        console.log(e.target.files[0]);
+        this.setState({ 
+            image: e.target.files[0],
+            image_file: fileURL,
+            show: true,
+        });
+        let curMeasurementFiles = this.props.parent.state.measurements;
+        let newMeasurementFiles = {
+            ...curMeasurementFiles
+        };
+        newMeasurementFiles[`${this.props.id}`] = {
+            ...newMeasurementFiles[`${this.props.id}`],
+            image: e.target.files[0],
+            image_file: fileURL,
+        }
+        newMeasurementFiles[`${this.props.id}`].metadata.filetype = e.target.files[0].type;
+        newMeasurementFiles[`${this.props.id}`].metadata.measurement_id = `${this.state.lesion_id}${this.props.id}`;
+        this.props.parent.setState({
+            measurements: newMeasurementFiles
+        });
+        
+        console.log(this.props.parent.state.measurements);
     }
-
     // SEARCH HANDLERS
     handleQueryUpdate(e) {
         e.preventDefault();
         clearTimeout(this.state.searchTimeout);
-        this.setState({ searchTimeout: setTimeout(() => this.performSearch(e.target.value, this), 300) });
+        this.setState({ searchTimeout: setTimeout(() => this.performSearch(e.target.value, this, this.props.parent), 300) });
     }
 
-    async performSearch(input, caller) {
+    async performSearch(input, caller, parent) {
         let result = await fetch(`${SERVER_ENDPOINT}/search?query=${input}`)
             .then((data) => data.json())
             .catch((err) => console.log(err));
@@ -97,6 +150,7 @@ export default class Measurement extends React.Component {
         for (let entity of sortedEntities) {
             hierarchicalEntities = hierarchicalEntities.concat(this.DFSEntities(entity, 0));
         }
+        parent.setState({entities: hierarchicalEntities});
         caller.setState({entities: hierarchicalEntities, query: input});
     }
 
@@ -130,18 +184,122 @@ export default class Measurement extends React.Component {
         // updateCase.title = entity.title["@value"].replace("<em class='found'>","").replace("</em>","");
         // updateCase.userEntity = id;
         // updateCase.ancestors = entity.ancestor;
-        // console.log(entity.ancestor);
+        console.log(entity.ancestor);
         // caller.setState({selectedOption: entity, case: updateCase});
         caller.setState({selectedOption: entity});
+        let part = this.props.parent.state.participant;
+
 
         let definitionField = document.getElementById(`entityDefinition${this.props.id}`);
         definitionField.style.display = "block";
+
+        // create new lesion
+        let lesionID = this.state.lesion_id;
+        let lesion = this.props.parent.state.lesions[this.state.lesion_id];
+        lesion.lesion_id = lesionID;
+        lesion.diagnosis_entity = id;
+        lesion.diagnosis_title = entity.title["@value"];
+        lesion.ancestors = entity.ancestor;
+        this.props.parent.setState({
+            lesions: {
+                ...this.props.parent.state.lesions,
+                [lesionID]: lesion
+            }
+        });
+        this.setState({
+            lesion_id: lesionID
+        });
+
+        let curMeasurementFiles = this.props.parent.state.measurements;
+        let newMeasurementFiles = {
+            ...curMeasurementFiles
+        };
+        newMeasurementFiles[`${this.props.id}`].metadata.lesion_id = this.state.lesion_id;
+        this.props.parent.setState({
+            measurements: newMeasurementFiles
+        });
+
+        let curLesionMap = this.props.container.correspondingLesions;
+        let newLesionMap = {
+            ...curLesionMap,
+        };
+        newLesionMap[`${this.props.id}`] = this.state.lesion_id;
+        this.props.container.setState({
+            correspondingLesions: newLesionMap,
+        });
     }
     // UTILITIES
 
     toggle(e) {
         e.preventDefault()
         this.setState({show: !this.state.show})
+    }
+
+    handleUpdateSeverity(e) {
+        e.preventDefault();
+        let currentLesions = this.props.parent.state.lesions;
+        let updatedLesions = {
+            ...currentLesions
+        };
+        updatedLesions[`${this.state.lesion_id}`].severity = e.target.value;
+        console.log(updatedLesions[`${this.state.lesion_id}`]);
+        console.log(this.state.lesion_id);
+        console.log(`handleUpdateSeverity(${e.target.value})`);
+        this.props.parent.setState({
+            lesions: updatedLesions,
+        });
+        console.log(this.props.parent.state.lesions[`${this.state.lesion_id}`].severity);
+    }
+
+    handleUpdateSize(e) {
+        e.preventDefault();
+        let currentLesions = this.props.parent.state.lesions;
+        let updatedLesions = {
+            ...currentLesions
+        };
+        updatedLesions[`${this.state.lesion_id}`].size = e.target.value;
+        console.log(`handleUpdateSize(${e.target.value})`);
+        this.props.parent.setState({
+            lesions: updatedLesions,
+        });
+    }
+    
+    handleUpdateMorphology(e) {
+        e.preventDefault();
+        let currentLesions = this.props.parent.state.lesions;
+        let updatedLesions = {
+            ...currentLesions
+        };
+        updatedLesions[`${this.state.lesion_id}`].morphology = e.target.value;
+        console.log(`handleUpdateMorphology(${e.target.value})`);
+        this.props.parent.setState({
+            lesions: updatedLesions,
+        });
+    }
+
+    handleGetPreviousLesion(e) {
+        // TODO: Resolve "get_previous_lesion"
+        e.preventDefault();
+        console.log(this.props.container.state.measurements);
+        let lastLesID = this.props.container.state.correspondingLesions[`${this.props.id - 1}`];
+        let lastLesion = this.props.parent.state.lesions[lastLesID];
+        console.log(lastLesID, lastLesion);
+        if (lastLesID == undefined) return;
+        this.setState({
+            lesion_id: lastLesID,
+            query: lastLesion.diagnosis_title,
+        });
+        
+        let curMeasurementFiles = this.props.parent.state.measurements;
+        let newMeasurementFiles = {
+            ...curMeasurementFiles
+        };
+        newMeasurementFiles[`${this.props.id}`].metadata.lesion_id = lastLesID;
+        this.props.parent.setState({
+            measurements: newMeasurementFiles
+        });
+
+        console.log(lastLesID);
     }
 
     render() {
@@ -197,58 +355,16 @@ export default class Measurement extends React.Component {
                                         <a className={`itype_${this.props.id} std-type_${this.props.id}`}
                                         onMouseDown={(e) => {
                                             e.preventDefault();
-                                            this.handleUpdateImgType("PTG");
+                                            this.handleUpdateImgType("Clinical");
                                         }}>
-                                                Clinical Photography (PTG)
+                                                Clinical
                                         </a>
                                         <a className={`itype_${this.props.id} std-type_${this.props.id}`}
                                         onMouseDown={(e) => {
                                             e.preventDefault();
-                                            this.handleUpdateImgType("MDM");
+                                            this.handleUpdateImgType("Dermoscopy");
                                         }}>
-                                                Multispectral Dermoscopy (MDM)
-                                        </a>
-                                        <a className={`itype_${this.props.id} std-type_${this.props.id}`}
-                                        onMouseDown={(e) => {
-                                            e.preventDefault();
-                                            this.handleUpdateImgType("CLR");
-                                        }}>
-                                                Colorimetry (CLR)
-                                        </a>
-                                        <a className={`itype_${this.props.id} std-type_${this.props.id}`}
-                                        onMouseDown={(e) => {
-                                            e.preventDefault();
-                                            this.handleUpdateImgType("DRS");
-                                        }}>
-                                                Diffuse Reflectance Spectroscopy (DRS)
-                                        </a>
-                                        <a className={`itype_${this.props.id} std-type_${this.props.id}`}
-                                        onMouseDown={(e) => {
-                                            e.preventDefault();
-                                            this.handleUpdateImgType("SPK");
-                                        }}>
-                                                Polarization Speckle (SPK)
-                                        </a>
-                                        <a className={`itype_${this.props.id} std-type_${this.props.id}`}
-                                        onMouseDown={(e) => {
-                                            e.preventDefault();
-                                            this.handleUpdateImgType("POL");
-                                        }}>
-                                                Stokes Polarimetry (POL)
-                                        </a>
-                                        <a className={`itype_${this.props.id} std-type_${this.props.id}`}
-                                        onMouseDown={(e) => {
-                                            e.preventDefault();
-                                            this.handleUpdateImgType("MMS");
-                                        }}>
-                                                Multimodal Microscopy (MMS)
-                                        </a>
-                                        <a className={`itype_${this.props.id} std-type_${this.props.id}`}
-                                        onMouseDown={(e) => {
-                                            e.preventDefault();
-                                            this.handleUpdateImgType("RAM");
-                                        }}>
-                                                Raman Spectroscopy (RAM)
+                                                Dermoscopy
                                         </a>
                                         <a className={`itype_${this.props.id}`}>Other</a>
                                     </div>
@@ -260,69 +376,69 @@ export default class Measurement extends React.Component {
                             
                         </div>
                         <div className="col-lg-6 mb-3">
-                            <form method="post" encType="multipart/form-data" onSubmit={(e) => e.preventDefault()}>
-                                <div className="row mb-3">
-                                    <div className="dropdown col-lg-8">
-                                        <input type="input" className="form-control form-control-lg" 
-                                            id="imgtype" placeholder="Lesion ↓"
-                                            value={this.state.lesion}
-                                            onChange={this.handleImageTypeInput.bind(this)}
-                                            onFocus={(e) => {
-                                                e.preventDefault();
-                                                document.querySelectorAll(`.lesions-${this.props.id}`).forEach(a => a.style.display = "block");
-                                            }}
-                                            onBlur={(e) => {
-                                                e.preventDefault();
-                                                document.querySelectorAll(`.lesions-${this.props.id}`).forEach(a => a.style.display = "none");
-                                            }}
-                                        />
-                                        <div className={`search-content lesions-${this.props.id}`}>
-                                            <a className="les"
-                                            onMouseDown={(e) => {
-                                                e.preventDefault();
-                                                // this.handleUpdateImgType("Clinical");
-                                            }}>
-                                                    230928A4a92
-                                            </a>
-                                            <a className="les"
-                                            onMouseDown={(e) => {
-                                                e.preventDefault();
-                                                // this.handleUpdateImgType("Dermoscopy");
-                                            }}>
-                                                    230928A2H57
-                                            </a>
-                                        </div>
-                                    </div>
-                                    <div className="col-lg-4">
-                                        <input type="submit" className="form-control form-control-lg btn btn-outline-primary btn-lg" value="New Lesion"/>
-                                    </div>
-                                </div>
-                            </form>
-                            <div className="form-group row">
-                                <div className="mb-3 dropdown">
-                                        <input type="input" className="form-control form-control-lg" id="search"
-                                            name="search" placeholder="Search Diagnosis ↓"
-                                                // value={this.state.query}
-                                                onChange={this.handleQueryUpdate.bind(this)}
-                                                onFocus={(e) => {
-                                                    e.preventDefault();
-                                                    document.querySelectorAll(`.diagnosis-list-${this.props.id}`).forEach(a => a.style.display = "block");
-                                                }}/>
-                                        <div className={`search-content diagnosis-list-${this.props.id}`}>
-                                            {
-                                                this.state.entities.map((entry) => (
-                                                    <a onClick={(e) => {
+                            {
+                                true ? // TODO: Add "use previous lesion" functionality back
+
+                                <div className="form-group row">
+                                    <div className="col-lg-12 mb-3 dropdown">
+                                            <input type="input" className="form-control form-control-lg" id="search"
+                                                name="search" placeholder="Search Diagnosis ↓"
+                                                    // value={this.state.query}
+                                                    onChange={this.handleQueryUpdate.bind(this)}
+                                                    onFocus={(e) => {
                                                         e.preventDefault();
-                                                        this.handleSelectChange(entry, this);
-                                                    }}
-                                                    id={
-                                                        entry.id.replace("https://id.who.int/icd/entity/")
-                                                    } dangerouslySetInnerHTML={{__html: entry.title}} />
-                                                ))
-                                            }
-                                        </div>
+                                                        document.querySelectorAll(`.diagnosis-list-${this.props.id}`).forEach(a => a.style.display = "block");
+                                                    }}/>
+                                            <div className={`search-content diagnosis-list-${this.props.id}`}>
+                                                {
+                                                    this.state.entities.map((entry) => (
+                                                        <a onClick={(e) => {
+                                                            e.preventDefault();
+                                                            this.handleSelectChange(entry, this);
+                                                        }}
+                                                        id={
+                                                            entry.id.replace("https://id.who.int/icd/entity/")
+                                                        } dangerouslySetInnerHTML={{__html: entry.title}} />
+                                                    ))
+                                                }
+                                            </div>
+                                    </div>
                                 </div>
-                            </div>
+                                :
+                                <div className="form-group row">
+                                    <div className="col-lg-8 mb-3 dropdown">
+                                            <input type="input" className="form-control form-control-lg" id="search"
+                                                name="search" placeholder="Search Diagnosis ↓"
+                                                    // value={this.state.query}
+                                                    onChange={this.handleQueryUpdate.bind(this)}
+                                                    onFocus={(e) => {
+                                                        e.preventDefault();
+                                                        document.querySelectorAll(`.diagnosis-list-${this.props.id}`).forEach(a => a.style.display = "block");
+                                                    }}/>
+                                            <div className={`search-content diagnosis-list-${this.props.id}`}>
+                                                {
+                                                    this.state.entities.map((entry) => (
+                                                        <a onClick={(e) => {
+                                                            e.preventDefault();
+                                                            this.handleSelectChange(entry, this);
+                                                        }}
+                                                        id={
+                                                            entry.id.replace("https://id.who.int/icd/entity/")
+                                                        } dangerouslySetInnerHTML={{__html: entry.title}} />
+                                                    ))
+                                                }
+                                            </div>
+                                    </div>
+                                    
+                                    {/* <div className="col-lg-4 mb-3">
+                                        <input type="button"
+                                                className="form-control form-control-lg btn btn-outline-primary btn-lg "
+                                                id="useprev" value="Use Previous" name="useprev" data-id="0"
+                                                onClick={this.handleGetPreviousLesion.bind(this)}
+                                                />
+                                    </div> */}
+                                </div>
+                            }
                             <div className="row">
                                 <div class="hidden-passthrough" id={`entityDefinition${this.props.id}`}>
                                     <h5>{this.state.selectedOption.title["@value"]}</h5>
@@ -332,9 +448,9 @@ export default class Measurement extends React.Component {
                                     }</p>
                                 </div>
                             </div>
-                            <div className="row">
+                            {/* <div className="row">
                                 <img className="img-fluid" src={`${process.env.PUBLIC_URL}/amap.png`}/>
-                            </div>
+                            </div> */}
                             <div className="row">
                                 
                                 {/* <div className="col-lg-6 mb-3 dropdown">
@@ -378,9 +494,9 @@ export default class Measurement extends React.Component {
                                     <div className="row mb-3">
                                         <div className="form-group">
                                             <select class="form-control form-control-lg" name="severity" id="severity"
-                                                onChange={this.props.updateSeverity}
+                                                onChange={this.handleUpdateSeverity.bind(this)}
                                                 required>
-                                                <option value="" selected disabled hidden>Benign or Malignant ↓</option>
+                                                <option value="0" selected disabled hidden>Benign or Malignant ↓</option>
                                                 <option value="b">Benign</option>
                                                 <option value="m">Malignant</option>
                                             </select>
@@ -402,14 +518,19 @@ export default class Measurement extends React.Component {
                                         <div className="form-group">
                                             <input type="number" className="form-control form-control-lg" id="size"
                                                     name="size" placeholder="Lesion size (mm)" min="0"
-                                                    onChange={this.props.updateSize}/>
+                                                    // value={
+                                                    //     this.props.parent.state.lesions[`${this.state.lesion_id}`].size
+                                                    // }
+                                                    onChange={this.handleUpdateSize.bind(this)}/>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             <div className="row">
                                 <div className="form-group">
-                                    <textarea className="form-control form-control-lg" placeholder="Morphology"></textarea>
+                                    <textarea className="form-control form-control-lg" 
+                                        placeholder="Morphology"
+                                        onChange={this.handleUpdateMorphology.bind(this)}></textarea>
                                 </div>
                             </div>
                         </div>

@@ -1,7 +1,7 @@
 var { LogEntry } = require("./Structures")
 
 let counter = 0;
-let alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+let alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 let curday = "000000"
 
 /*
@@ -34,6 +34,8 @@ function encode(input) {
 
 function id(initials) {
     let date = new Date();
+
+    // UNUSED
     let month = date.getMonth() + 1;
     let day = date.getDate();
     let year = date.getFullYear();
@@ -58,8 +60,15 @@ function id(initials) {
 
     console.log(`Current datecode: ${curday}. Generated datecode: ${dateCode}. Counter: ${counter}. Formatted counter: ${formattedCounter}.`)
     
-    let patient_code = `${curday}${formattedCounter}`;
-    let log_entry = new LogEntry(patient_code, initials, new Date().toLocaleTimeString());
+    // UNUSED^^
+    let millis = Date.now();
+    console.log(millis);
+
+    let encodedID = encode(millis);
+    console.log(`Encoded ID: ${encodedID}`);
+
+    let patient_code = `${curday}${formattedCounter}`; // UNUSED
+    let log_entry = new LogEntry(encodedID, initials, new Date().toLocaleTimeString());
 
     log.push(log_entry);
 
