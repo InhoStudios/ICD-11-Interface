@@ -87,6 +87,19 @@ code {
   max-height: 90vh !important;
 }
 
+.fill-modal {
+  overflow-x:hidden;
+  overflow-y:auto;
+  justify-content: center;
+  justify-self: center;
+  height: 100% !important;
+}
+
+.modal-content .pad {
+  height:100%;
+  max-height:80vh !important;
+}
+
 .overlay-wrapper {
   position: relative;
   width: 100%;

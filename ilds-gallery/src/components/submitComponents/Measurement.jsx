@@ -198,7 +198,7 @@ export default class Measurement extends React.Component {
         let lesion = this.props.parent.state.lesions[this.state.lesion_id];
         lesion.lesion_id = lesionID;
         lesion.diagnosis_entity = id;
-        lesion.diagnosis_title = this.state.query;
+        lesion.diagnosis_title = entity.title["@value"];
         lesion.ancestors = entity.ancestor;
         this.props.parent.setState({
             lesions: {
@@ -263,6 +263,19 @@ export default class Measurement extends React.Component {
             lesions: updatedLesions,
         });
     }
+    
+    handleUpdateMorphology(e) {
+        e.preventDefault();
+        let currentLesions = this.props.parent.state.lesions;
+        let updatedLesions = {
+            ...currentLesions
+        };
+        updatedLesions[`${this.state.lesion_id}`].morphology = e.target.value;
+        console.log(`handleUpdateMorphology(${e.target.value})`);
+        this.props.parent.setState({
+            lesions: updatedLesions,
+        });
+    }
 
     handleGetPreviousLesion(e) {
         // TODO: Resolve "get_previous_lesion"
@@ -285,8 +298,6 @@ export default class Measurement extends React.Component {
         this.props.parent.setState({
             measurements: newMeasurementFiles
         });
-
-
 
         console.log(lastLesID);
     }
@@ -517,7 +528,9 @@ export default class Measurement extends React.Component {
                             </div>
                             <div className="row">
                                 <div className="form-group">
-                                    <textarea className="form-control form-control-lg" placeholder="Morphology"></textarea>
+                                    <textarea className="form-control form-control-lg" 
+                                        placeholder="Morphology"
+                                        onChange={this.handleUpdateMorphology.bind(this)}></textarea>
                                 </div>
                             </div>
                         </div>

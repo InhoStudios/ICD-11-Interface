@@ -3,6 +3,8 @@ import ImageUploadField from "../components/submitComponents/ImageUploadField";
 import PatientInfoField from "../components/submitComponents/PatientInfoField";
 import axios from "axios";
 import { Case, ImageMetadata, Lesion, Metadata, Participant, SERVER_ENDPOINT } from "../utilities/Structures";
+import ConfirmModal from "../components/ConfirmModal";
+import UploadedModal from "../components/UploadedModal";
 
 export default class Submit extends React.Component {
     searchQuery = "test";
@@ -32,18 +34,13 @@ export default class Submit extends React.Component {
             metadata: new ImageMetadata(),
             attending_investigator: "",
             patient_id: "",
-            measurements: {
-                0: {
-                    image: '',
-                    image_file: '',
-                    show: true,
-                    metadata: new Metadata(),
-                }
-            },
+            measurements: {},
             measurement_metadata: {
                 0: new Metadata(),
             },
-            lesions: {},
+            lesions: {
+                'empty': new Lesion()
+            },
         };
     }
 
@@ -243,16 +240,25 @@ export default class Submit extends React.Component {
         console.log(`handleUpdateGender(${e.target.value})`);
     }
 
+    openModal(e) {
+        e.preventDefault();
+        console.log(this.state);
+        console.log(Object.values(this.state.measurements));
+        document.getElementById("confirm-modal").style.display="block";
+    }
+
+    closeModal(e) {
+        e.preventDefault();
+        document.getElementById("confirm-modal").style.display="none";
+    }
+
+    closeUploadModal(e) {
+        e.preventDefault();
+        document.getElementById("upload-modal").style.display="none";
+        window.location.reload();
+    }
+
     // old handlers
-
-    handleUpdateSeverity(e) {
-        this.updateCase("severity", e.target.value);
-        console.log(`handleUpdateSeverity(${e.target.value})`);
-    }
-
-    handleUpdateDod(e) {
-        console.log(`handleUpdateDod(${e.target.value})`);
-    }
 
     handleUpdateSize(e) {
         this.updateCase("size", e.target.value);
@@ -262,11 +268,6 @@ export default class Submit extends React.Component {
     handleUpdateAge(e) {
         this.updateCase("age", e.target.value);
         console.log(`handleUpdateAge()`);
-    }
-
-    handleUpdateHist(e) {
-        this.updateCase("history", e.target.value);
-        console.log(`handleUpdateHist()`);
     }
 
     handleUpdateSite(index) {
@@ -286,11 +287,15 @@ export default class Submit extends React.Component {
             formData.append(`${measurement.metadata.lesion_id}${meas_id}`, measurement.image);
             meas_id++;
         });
+        let uploadLesions = this.state.lesions;
+        delete uploadLesions['empty'];
         formData.append("measurements", JSON.stringify(this.state.measurements));
         formData.append("participant", JSON.stringify(this.state.participant));
-        formData.append("lesions", JSON.stringify(this.state.lesions));
+        formData.append("lesions", JSON.stringify(uploadLesions));
         formData.append("attendant", this.state.attending_investigator);
         await axios.post(`${SERVER_ENDPOINT}/upload`, formData, {});
+        document.getElementById("confirm-modal").style.display="none";
+        document.getElementById("upload-modal").style.display="block";
         return;
         // TODO: REMOVE TEMP TESTING
 
@@ -365,38 +370,43 @@ export default class Submit extends React.Component {
                                 updateGender={this.handleUpdateGender.bind(this)}
                                 updateSkinType={this.handleUpdateSkinType.bind(this)}
                                 updateEthnicity={this.handleUpdateEthnicity.bind(this)}
-                                updateHist={this.handleUpdateHist.bind(this)}
                                 participant={this.state.participant}
                             />
                             <ImageUploadField 
                                 updateSite={this.handleUpdateSite.bind(this)}
                                 updateQuery={this.handleQueryUpdate.bind(this)}
-                                updateSeverity={this.handleUpdateSeverity.bind(this)} 
-                                updateDod={this.handleUpdateDod.bind(this)}
                                 updateSize={this.handleUpdateSize.bind(this)}
-                                selectChange={this.handleSelectChange}
-                                query={this.props.query}
                                 parent={this}
                                 measurements={this.state.measurements}
                             />
 
                             <div className="row mb-5">
                                 <form method="post" encType="multipart/form-data">
-                                        <div className="form-group mt-5 mb-3">
-                                            <input 
-                                                type="submit"
-                                                className={`form-control form-control-lg btn btn-outline-primary btn-lg ${this.hideclass}`}
-                                                id="upload_button" 
-                                                value="Upload" 
-                                                name="submit" 
-                                                onClick={this.handleUpload.bind(this)}
-                                            />
-                                        </div>
-                                    </form>
-                                </div>
+                                    <div className="form-group mt-5 mb-3">
+                                        <input 
+                                            type="submit"
+                                            className={`form-control form-control-lg btn btn-outline-primary btn-lg ${this.hideclass}`}
+                                            id="upload_button" 
+                                            value="Upload" 
+                                            name="submit" 
+                                            onClick={this.openModal.bind(this)}
+                                        />
+                                    </div>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div>
+                <ConfirmModal 
+                    measurements={this.state.measurements}
+                    participant={this.state.participant}
+                    lesions={this.state.lesions}
+                    attendant={this.state.attending_investigator}
+                    parent={this}
+                />
+                <UploadedModal
+                    parent={this}
+                />
             </section>
         );
     }

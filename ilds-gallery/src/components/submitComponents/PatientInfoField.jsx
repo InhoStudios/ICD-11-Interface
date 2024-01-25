@@ -31,7 +31,7 @@ export default class PatientInfoField extends React.Component {
                                 <div className="form-group">
                                     <select class="form-control form-control-lg" name="severity" id="severity"
                                         onChange={this.props.updateGender}
-                                        value={this.props.participant.sex}
+                                        value={this.props.participant.gender}
                                         required>
                                         <option value="" selected disabled hidden>Choose patient declared gender ↓</option>
                                         <option value="f">Female</option>

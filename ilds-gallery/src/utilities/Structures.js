@@ -40,7 +40,12 @@ export class Lesion {
 
     constructor() {
         this.size = 0;
-        this.severity = '0';
+        this.severity = 'b';
+        this.lesion_id = '';
+        this.diagnosis_entity = '';
+        this.diagnosis_title = '';
+        this.morphology = '';
+        this.anatomic_site = 0;
     }
 }
 
@@ -57,6 +62,10 @@ export class Metadata {
     aperture;
     shutterspeed;
     polarization;
+
+    constructor() {
+        this.lesion_id = 'empty';
+    }
 }
 
 export class Case {

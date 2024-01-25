@@ -50,6 +50,7 @@ export default class ImageUploadField extends React.Component {
         
         let nextID = `imgUpload_${this.state.idCounter - 1}`;
         document.getElementById(nextID).click();
+        console.log(this.props.parent.state);
     }
 
     render() {
