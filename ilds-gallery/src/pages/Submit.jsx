@@ -242,6 +242,10 @@ export default class Submit extends React.Component {
 
     openModal(e) {
         e.preventDefault();
+        if (!this.checkCase()) {
+            alert("One or more fields are empty\n Please double check before resubmitting");
+            return;
+        }
         console.log(this.state);
         console.log(Object.values(this.state.measurements));
         document.getElementById("confirm-modal").style.display="block";
@@ -279,6 +283,10 @@ export default class Submit extends React.Component {
         e.preventDefault();
         console.log(this.state);
         await this.uploadICDEntities(this.state.entities);
+        if (!this.checkCase()) {
+            alert("One or more fields are empty\n Please double check before resubmitting");
+            return;
+        }
         
         const formData = new FormData();
         let meas_id = 0;
@@ -315,13 +323,43 @@ export default class Submit extends React.Component {
 
     checkCase() {
         try {
-            return (
-                this.state.case.age !== undefined &&
-                this.state.case.sex !== undefined &&
-                this.state.case.history !== undefined &&
-                this.state.case.userEntity !== undefined &&
-                this.state.case.severity !== undefined
-            )
+            if (
+                this.state.participant.participant_id === undefined ||
+                this.state.participant.mob === undefined ||
+                this.state.participant.gender === undefined ||
+                this.state.participant.skin_type === undefined ||
+                this.state.participant.ethnicity === undefined ||
+                this.state.attending_investigator === ""
+            ) {
+                console.log("Participant, ", this.state.participant);
+                return false;
+            }
+            for (let lesion in Object.values(this.state.lesions)) {
+                if (lesion.lesion_id === 'empty') {
+                    continue;
+                }
+                if (
+                    lesion.lesion_id === '' ||
+                    lesion.diagnosis_entity === ''
+                ) {
+                    console.log("Lesion, ", lesion);
+                    return false;
+                }
+            }
+            console.log(Object.values(this.state.measurements));
+            for (let measurementInd in Object.values(this.state.measurements)) {
+                let measurement = this.state.measurements[`${measurementInd}`];
+                if (
+                    measurement.image === "" ||
+                    measurement.metadata.measurement_id === undefined || 
+                    measurement.metadata.lesion_id === "empty" ||
+                    measurement.metadata.modality === undefined
+                ) {
+                    console.log("Measurement, ", measurement);
+                    return false;
+                }
+            }
+            return true;
         } catch (error) { 
             console.error(error);
             return false;
