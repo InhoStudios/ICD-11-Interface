@@ -55,7 +55,7 @@ async function getImagesFromRequest(req) {
 
     let query = `SELECT CONCAT('http://${process.env.IP}:${process.env.PORT}/', m.filepath) as url,` + 
     ` p.participant_id as participant_id, l.les_size as lesion_size, l.severity as severity,` + 
-    ` ie.entity_title as entity_title, m.measurement_id as measurement_id,` + 
+    ` ie.entity_title as entity_title, m.measurement_id as measurement_id, l.morphology as morphology,` + 
     ` m.modality as modality, l.anatomic_site as anatomic_site, ie.entity_id as entity_id` + 
     ` FROM Measurement m, Lesion l, Participant p, ICD_Entity ie` + 
     ` WHERE m.lesion_id = l.lesion_id AND l.participant_id = p.participant_id` + 

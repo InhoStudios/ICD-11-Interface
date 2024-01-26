@@ -70,8 +70,8 @@ router.post('/', upload.any(), async (req, res, next) => {
                 lesion_id: `"${id}"`,
                 participant_id: `"${participant.participant_id}"`,
                 diagnosis_entity: `"${lesion.diagnosis_entity}"`,
-                // morphology: `"${}"`,
-                anatomic_site: `"${0}"`,
+                anatomic_site: `"${lesion.anatomic_site}"`,
+                morphology: `"${lesion.morphology}"`,
                 severity: `"${lesion.severity}"`,
                 les_size: `"${lesion.size}"`,
             }

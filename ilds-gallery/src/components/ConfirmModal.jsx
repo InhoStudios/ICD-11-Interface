@@ -1,16 +1,10 @@
 import React from "react";
+import { SERVER_ENDPOINT } from "../utilities/Structures";
 import { ANATOMIC_SITES } from "../utilities/Structures";
 import CopyComponent from "./CopyComponent";
 
 export default class ConfirmModal extends React.Component {
 
-    constructor(props) {
-        super(props);
-    }
-
-    componentDidMount() {
-        console.log(this.props.measurements);
-    }
 
     render() {
         return (
@@ -95,24 +89,34 @@ export default class ConfirmModal extends React.Component {
                                         </p>
                                     </div>
                                     <div className="row">
-                                        <div className="col-lg-4">
+                                        <div className="col-lg-6">
                                             <label>
                                                 Lesion Size
                                             </label>
-                                            <input type="text" className="form-control form-control-lg mb-3" value={`${this.props.parent.state.lesions[measurement.metadata.lesion_id].size} mm`} disabled />
+                                            <input type="text" className="form-control form-control-lg mb-3" 
+                                                value={`${this.props.parent.state.lesions[measurement.metadata.lesion_id].size} mm`} disabled />
                                         </div>
                                     
-                                        <div className="col-lg-4">
+                                        <div className="col-lg-6">
                                             <label>
                                                 Severity
                                             </label>
-                                            <input type="text" className="form-control form-control-lg mb-3" value={this.props.parent.state.lesions[measurement.metadata.lesion_id].size == 'b' ? "Benign" : "Malignant"} disabled />
+                                            <input type="text" className="form-control form-control-lg mb-3" 
+                                                value={this.props.parent.state.lesions[measurement.metadata.lesion_id].size == 'b' ? "Benign" : "Malignant"} disabled />
                                         </div>
-                                        <div className="col-lg-4">
+                                        <div className="col-lg-6">
                                             <label>
                                                 Imaging Modality
                                             </label>
-                                            <input type="text" className="form-control form-control-lg mb-3" value={`${measurement.metadata.modality}`} disabled />
+                                            <input type="text" className="form-control form-control-lg mb-3" 
+                                                value={`${measurement.metadata.modality}`} disabled />
+                                        </div>
+                                        <div className="col-lg-6">
+                                            <label>
+                                                Body Site
+                                            </label>
+                                            <input type="text" className="form-control form-control-lg mb-3" 
+                                                value={ANATOMIC_SITES[this.props.parent.state.lesions[measurement.metadata.lesion_id].anatomic_site].name} disabled />
                                         </div>
                                     </div>
 

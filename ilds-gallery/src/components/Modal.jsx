@@ -1,8 +1,40 @@
 import React from "react";
 import { ANATOMIC_SITES } from "../utilities/Structures";
+import mapAreas from "../body_sites.json"
 import CopyComponent from "./CopyComponent";
+import ImageMapper from 'react-img-mapper';
 
 export default class Modal extends React.Component {
+
+    constructor(props) {
+        super(props);
+        this.state = {
+            map: {
+                name: 'anatomy-map',
+                areas: mapAreas
+            },
+        }
+        this.ref = React.createRef();
+    }
+
+    componentDidMount() {
+        console.log(this.props.image.anatomic_site);
+        mapAreas.map((mapArea) => {
+            mapArea.strokeColor = "#00000000";
+            if (mapArea.name === this.props.image.anatomic_site) {
+                mapArea.preFillColor = "#81aae64f";
+            } else {
+                mapArea.preFillColor = "#00000000";
+            }
+        });
+        this.setState({
+            map: {
+                name: 'anatomy-map',
+                areas: mapAreas
+            },
+        });
+    }
+
     render() {
         return (
             <div id={this.props.image.measurement_id} className="modal">
@@ -38,7 +70,7 @@ export default class Modal extends React.Component {
                                     
                                     <h3 className="mb-2">Morphology</h3>
                                     <p className="mb-4">
-                                    Aliquam erat volutpat. Mauris feugiat nisl nulla, sed viverra enim condimentum scelerisque. Praesent faucibus vulputate ultrices. Maecenas nunc ligula, ullamcorper id massa quis, mollis eleifend enim. Pellentesque aliquet pretium nulla ac sodales. Integer aliquam lorem ut lectus volutpat, sed viverra augue lacinia. Nam leo felis, ullamcorper eu justo quis, facilisis iaculis ex. Fusce faucibus risus non dictum rhoncus. Etiam eleifend volutpat nibh id pulvinar.   
+                                        {this.props.image.morphology}
                                     </p>
 
                                     <h3 className="mb-2">Details</h3>
@@ -64,10 +96,16 @@ export default class Modal extends React.Component {
                                     {/* <input type="text" className="form-control form-control-lg mb-3" value={
                                         ANATOMIC_SITES[ANATOMIC_SITES.findIndex(site => site.index == this.props.image.anatomic_site)].site
                                     } disabled /> */}
-                                        
-                                    <div className="row mb-5">
-                                        <img className="img-fluid" src={`${process.env.PUBLIC_URL}/amap.png`}/>
-                                    </div>
+                                    {
+                                        this.props.show ?
+                                        <ImageMapper src={`${process.env.PUBLIC_URL}/amap.png`} 
+                                            map={this.state.map} 
+                                            responsive={true} 
+                                            parentWidth={800}
+                                            disabled={true} 
+                                        /> :
+                                        <></>
+                                    }
                                     <div className="row">
                                         <div className="col-lg-6">
                                             <span>

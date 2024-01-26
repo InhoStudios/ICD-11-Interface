@@ -12,7 +12,7 @@ export default class UploadedModal extends React.Component {
             <div id="upload-modal" className="modal">
                 <div className="modal-content fill-modal">
                     <div className="text-center">
-                        <h1 className="mb-5">Successfully uploaded</h1>
+                        <h1 className="mb-5">Successfully uploaded!</h1>
                         <img className="img-fluid mb-5" src={`${process.env.PUBLIC_URL}/tick.png`}/>
                         <a 
                             href="/"
