@@ -1,5 +1,6 @@
 import React from "react";
 import { ANATOMIC_SITES, Lesion, SERVER_ENDPOINT, Metadata } from "../../utilities/Structures";
+import AnatomyMap from "../AnatomyMap";
 
 export default class Measurement extends React.Component {
 
@@ -257,7 +258,7 @@ export default class Measurement extends React.Component {
         let updatedLesions = {
             ...currentLesions
         };
-        updatedLesions[`${this.state.lesion_id}`].size = e.target.value;
+        updatedLesions[`${this.state.lesion_id}`].size = Number(e.target.value);
         console.log(`handleUpdateSize(${e.target.value})`);
         this.props.parent.setState({
             lesions: updatedLesions,
@@ -448,9 +449,11 @@ export default class Measurement extends React.Component {
                                     }</p>
                                 </div>
                             </div>
-                            {/* <div className="row">
-                                <img className="img-fluid" src={`${process.env.PUBLIC_URL}/amap.png`}/>
-                            </div> */}
+                            {
+                                this.state.show ?                                
+                                <AnatomyMap parent={this.props.parent} les_id={this.state.lesion_id} /> :
+                                <></>
+                            }
                             <div className="row">
                                 
                                 {/* <div className="col-lg-6 mb-3 dropdown">

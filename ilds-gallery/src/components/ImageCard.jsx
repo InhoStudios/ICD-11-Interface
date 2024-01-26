@@ -7,13 +7,22 @@ export default class ImageCard extends React.Component {
     constructor(props) {
         super(props);
         this.props = props;
+        this.state = {
+            show_modal: false,
+        };
     }
 
     openModal(id) {
+        this.setState({
+            show_modal: true
+        });
         document.getElementById(id).style.display="block";
     }
 
     closeModal(id) {
+        this.setState({
+            show_modal: false
+        })
         document.getElementById(id).style.display="none";
     }
 
@@ -44,7 +53,7 @@ export default class ImageCard extends React.Component {
                         value="-select" />
                     </label>
                 </button>
-                <Modal image={this.props.image} closeModal={this.closeModal}></Modal>
+                <Modal image={this.props.image} closeModal={this.closeModal.bind(this)} show={this.state.show_modal}></Modal>
             </div>
         )
     }

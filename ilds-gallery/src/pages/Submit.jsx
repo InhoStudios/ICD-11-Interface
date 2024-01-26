@@ -296,12 +296,15 @@ export default class Submit extends React.Component {
             meas_id++;
         });
         let uploadLesions = this.state.lesions;
+        console.log(uploadLesions);
         delete uploadLesions['empty'];
         formData.append("measurements", JSON.stringify(this.state.measurements));
         formData.append("participant", JSON.stringify(this.state.participant));
         formData.append("lesions", JSON.stringify(uploadLesions));
         formData.append("attendant", this.state.attending_investigator);
+
         await axios.post(`${SERVER_ENDPOINT}/upload`, formData, {});
+
         document.getElementById("confirm-modal").style.display="none";
         document.getElementById("upload-modal").style.display="block";
         return;
