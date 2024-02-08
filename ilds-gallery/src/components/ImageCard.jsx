@@ -10,12 +10,18 @@ export default class ImageCard extends React.Component {
         this.props = props;
         this.state = {
             show_modal: false,
-            parents_str: ''
+            parents_str: '',
+            parents: [
+                {
+                    entity_title: 'abcde',
+                    entity_id: '12345',
+                },
+            ]
         };
     }
 
     async componentDidMount() {
-        let parents = await fetch(`${SERVER_ENDPOINT}/db_select?values=distinct c.entity_id as entity_id&from=Lesion_Categories c&where=c.lesion_id='${this.props.image.lesion_id}'`)
+        let parents = await fetch(`${SERVER_ENDPOINT}/db_select?values=distinct e.entity_title as entity_title, c.entity_id as entity_id&from=ICD_Entity e, Lesion_Categories c&where=c.lesion_id='${this.props.image.lesion_id}' and e.entity_id=c.entity_id`)
             .then((data) => data.json())
             .catch((err) => console.log(err));
         let parent_ids = [];
@@ -24,7 +30,8 @@ export default class ImageCard extends React.Component {
         });
         let parents_str = parent_ids.join(" ");
         this.setState({
-            parents_str: parents_str
+            parents_str: parents_str,
+            parents: parents
         });
     }
 
@@ -69,7 +76,7 @@ export default class ImageCard extends React.Component {
                         value="-select" />
                     </label>
                 </button>
-                <Modal image={this.props.image} closeModal={this.closeModal.bind(this)} show={this.state.show_modal}></Modal>
+                <Modal image={this.props.image} categories={this.state.parents} closeModal={this.closeModal.bind(this)} show={this.state.show_modal}></Modal>
             </div>
         )
     }

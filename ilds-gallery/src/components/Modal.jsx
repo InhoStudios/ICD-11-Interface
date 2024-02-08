@@ -138,13 +138,13 @@ export default class Modal extends React.Component {
                                 </div>
                                 <div className="col-lg-2">
                                     <h5 className="mb-3 mt-4"><u>Related Entities</u></h5>
-                                    <h6><a href="#">Other Entity</a></h6>
-                                    <h6><a href="#">Other Entity</a></h6>
-                                    <h6><a href="#">Other Entity</a></h6>
-                                    <h6><a href="#">Other Entity</a></h6>
-                                    <h6><a href="#">Other Entity</a></h6>
-                                    <h6><a href="#">Other Entity</a></h6>
-                                    <h6><a href="#">Other Entity</a></h6>
+                                    {
+                                        this.props.categories.map((category) => (
+                                            <h6>
+                                                <a href={`https://icd.who.int/dev11/l-derma/en#/http%3a%2f%2fid.who.int%2ficd%2fentity%2f${category.entity_id}`} target="_blank">{category.entity_title}</a>
+                                            </h6>
+                                        ))
+                                    }
                                 </div>
                             </div>
                         </div>
