@@ -1,5 +1,5 @@
 import React from "react";
-import ImageCard from "../components/ImageCard";
+import EditableImageCard from "../components/EditableImageCard";
 import { SERVER_ENDPOINT } from "../utilities/Structures";
 import FilterBar from "../components/FilterBar";
 
@@ -40,7 +40,7 @@ export default class Verify extends React.Component {
                             <div className="row mt-2">
                                 {
                                     this.state.images.map((image) => (
-                                        <ImageCard
+                                        <EditableImageCard
                                             image={image}
                                             colsize={"col-lg-3"}/>
                                     ))

@@ -1,10 +1,10 @@
 import React from "react";
-import Modal from "./Modal";
+import EditableModal from "./EditableModal";
 import { SERVER_ENDPOINT } from "../utilities/Structures";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faExpandAlt } from '@fortawesome/free-solid-svg-icons'
 
-export default class ImageCard extends React.Component {
+export default class EditableImageCard extends React.Component {
     constructor(props) {
         super(props);
         this.props = props;
@@ -76,7 +76,7 @@ export default class ImageCard extends React.Component {
                         value="-select" />
                     </label>
                 </button>
-                <Modal image={this.props.image} categories={this.state.parents} closeModal={this.closeModal.bind(this)} show={this.state.show_modal}></Modal>
+                <EditableModal image={this.props.image} categories={this.state.parents} closeModal={this.closeModal.bind(this)} show={this.state.show_modal}></EditableModal>
             </div>
         )
     }

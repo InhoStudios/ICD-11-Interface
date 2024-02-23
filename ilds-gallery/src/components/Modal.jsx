@@ -30,7 +30,7 @@ export default class Modal extends React.Component {
         this.setState({
             map: {
                 name: 'anatomy-map',
-                areas: mapAreas
+                areas: JSON.parse(JSON.stringify(mapAreas))
             },
         });
     }
@@ -57,7 +57,7 @@ export default class Modal extends React.Component {
                             <div className="mx-2 row">
                                 <div className="col-lg-10">
                                     <p>
-                                        ICD-11 Entity: <strong>http://id.who.int/icd/entity/{this.props.image.entity_id}</strong>
+                                        ICD-11 Entity: <a href={`https://icd.who.int/dev11/l-derma/en#/http%3a%2f%2fid.who.int%2ficd%2fentity%2f${this.props.image.entity_id}`} target="_blank"><strong>http://id.who.int/icd/entity/{this.props.image.entity_id}</strong></a>
                                     </p>
                                     <h1 className="mb-4"><u>{this.props.image.entity_title}</u></h1>
                                     {/* <h5 className="mb-2">Body site: {
@@ -93,6 +93,8 @@ export default class Modal extends React.Component {
                                     <label>
                                         Anatomic Site
                                     </label>
+                                    <input type="text" className="form-control form-control-lg mb-3" 
+                                        value={ANATOMIC_SITES[this.props.image.anatomic_site].name} disabled />
                                     {/* <input type="text" className="form-control form-control-lg mb-3" value={
                                         ANATOMIC_SITES[ANATOMIC_SITES.findIndex(site => site.index == this.props.image.anatomic_site)].site
                                     } disabled /> */}
@@ -115,6 +117,11 @@ export default class Modal extends React.Component {
                                         <div className="col-lg-6">
                                             <span>
                                                 Patient ID: <CopyComponent value={this.props.image.participant_id} />
+                                            </span>
+                                        </div>
+                                        <div className="col-lg-6">
+                                            <span>
+                                                Submitted by {this.props.image.attendant}
                                             </span>
                                         </div>
                                     </div>

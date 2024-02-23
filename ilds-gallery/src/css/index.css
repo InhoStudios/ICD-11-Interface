@@ -74,7 +74,7 @@ code {
 
 .modal-img {
   min-width: 100% !important;
-  padding-bottom: 15px;
+  margin-bottom: 15px;
 }
 
 .modal-content {
@@ -105,7 +105,7 @@ code {
   width: 100%;
 }
 
-.open-modal {
+.hoverable-icon {
   position: absolute;
   top: 0;
   bottom: 0;
@@ -118,9 +118,26 @@ code {
   background-color: rgba(50, 50, 50, 0.2);
 }
 
-.overlay-wrapper:hover .open-modal {
+.overlay-wrapper:hover .hoverable-icon {
   opacity: 1;
 }
+
+.edit-icon {
+  color: #fff;
+  font-size: 22px;
+  position: absolute;
+  top: 50%;
+  right: 0;
+  transform: translate(-50%, -45%);
+  -ms-transform: translate(-50%, -45%);
+  text-align: center;
+}
+
+.edit-icon:hover {
+  cursor: pointer !important;
+  color: #eee;
+}
+
 
 .icon {
   color: #eee;

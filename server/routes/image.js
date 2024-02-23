@@ -54,7 +54,7 @@ async function getImagesFromRequest(req) {
     let site = req.query.site ? `l.anatomic_site=${req.query.site} and a.anatomic_site=l.anatomic_site` : "true";
 
     let query = `SELECT CONCAT('http://${process.env.IP}:${process.env.PORT}/', m.filepath) as url,` + 
-    ` p.participant_id as participant_id, l.les_size as lesion_size, l.severity as severity,` + 
+    ` p.participant_id as participant_id, l.les_size as lesion_size, l.severity as severity, m.attendant as attendant,` + 
     ` ie.entity_title as entity_title, m.measurement_id as measurement_id, l.morphology as morphology,` + 
     ` m.modality as modality, l.anatomic_site as anatomic_site, ie.entity_id as entity_id, l.lesion_id as lesion_id` + 
     ` FROM Measurement m, Lesion l, Participant p, ICD_Entity ie` + 

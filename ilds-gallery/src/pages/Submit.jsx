@@ -157,13 +157,14 @@ export default class Submit extends React.Component {
         for (let fullEntity of entities) {
             let entity = {
                 entity_title: `'${fullEntity.title
-                    .replace("<em class='found'>","")
-                    .replace("</em>","")
-                    .replace(/\&nbsp;/g,"")}'`,
-                entity_id: `'${fullEntity.id.replace("http://id.who.int/icd/entity/","")}'`
+                    .replaceAll("<em class='found'>","")
+                    .replaceAll("</em>","")
+                    .replaceAll(/\&nbsp;/g,"")}'`,
+                entity_id: `'${fullEntity.id.replaceAll("http://id.who.int/icd/entity/","")}'`
             };
             entityPairs.push(entity)
         }
+        console.log(entityPairs);
 
         formData.append("into", "ICD_Entity");
         formData.append("values", JSON.stringify(entityPairs));
