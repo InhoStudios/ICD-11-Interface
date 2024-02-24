@@ -12,7 +12,7 @@ export default class Verify extends React.Component {
     }
 
     async getImagesFromDB() {
-        let images = await fetch(`${SERVER_ENDPOINT}/image`)
+        let images = await fetch(`${SERVER_ENDPOINT}/image?verified=true`)
             .then((data) => data.json())
             .catch((err) => console.log(err));
         if (images !== undefined) {

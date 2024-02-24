@@ -138,6 +138,22 @@ code {
   color: #eee;
 }
 
+.dlt-icon {
+  color: #aa0000;
+  font-size: 22px;
+  position: absolute;
+  top: 2%;
+  right: 2%;
+  transform: translate(-50%, 15%);
+  -ms-transform: translate(-50%, 15%);
+  text-align: center;
+}
+
+.dlt-icon:hover {
+  cursor: pointer !important;
+  color: #ff0000;
+}
+
 
 .icon {
   color: #eee;
