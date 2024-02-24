@@ -54,6 +54,10 @@ async function insertParticipant(part) {
     return await postQuery(query);
 }
 
+async function updateMeasurement(measurement) {
+    return;
+}
+
 module.exports = {
     postQuery: postQuery,
     insert: insert,

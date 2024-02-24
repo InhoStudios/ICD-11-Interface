@@ -19,6 +19,7 @@ var selectRouter = require('./routes/db_select');
 var insertRouter = require('./routes/db_insert');
 var imageRouter = require('./routes/image');
 var patientIDRouter = require('./routes/patient_id');
+var updateRouter = require('./routes/update.js');
 
 var app = express();
 // view engine setup
@@ -43,6 +44,7 @@ app.use('/db_select', selectRouter);
 app.use('/db_insert', insertRouter);
 app.use('/image', imageRouter);
 app.use('/patient_id', patientIDRouter);
+app.use('/update', updateRouter)
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
