@@ -12,19 +12,31 @@ export default class ImageUploadField extends React.Component {
             measurements: [],
             correspondingLesions: {},
             idCounter: 0,
+            activeID: 0,
         };
     }
 
+    toggleShow(id) {
+        this.setState({
+            activeID: id,
+        });
+    }
+
     async addImage() {
-        await this.setState(prevState => ({
-            measurements: [...prevState.measurements, 
-                <Measurement 
-                    id={prevState.idCounter} 
-                    container={this}
-                    {...this.props} />
-                ],
-            idCounter: prevState.idCounter + 1,
-        }));
+        let prevMeasurements = [
+            ...this.state.measurements,
+            <Measurement 
+                id={this.state.idCounter} 
+                toggleShow={this.toggleShow.bind(this)}
+                activeID={this.state.activeID}
+                container={this}
+                {...this.props} />
+        ];
+        await this.setState({
+            measurements: prevMeasurements,
+            idCounter: this.state.idCounter + 1,
+        });
+        console.log(this.state.idCounter);
         
         let curMeasurementFiles = this.props.parent.state.measurements;
         let newMeasurementFiles = {
@@ -49,6 +61,9 @@ export default class ImageUploadField extends React.Component {
         // });
         
         let nextID = `imgUpload_${this.state.idCounter - 1}`;
+        this.setState({
+            activeID: nextID
+        });
         document.getElementById(nextID).click();
         console.log(this.props.parent.state);
     }

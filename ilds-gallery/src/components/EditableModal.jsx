@@ -1,10 +1,11 @@
-import React from "react";
+import React, { version } from "react";
 import { ANATOMIC_SITES, SERVER_ENDPOINT } from "../utilities/Structures";
 import mapAreas from "../body_sites.json"
 import CopyComponent from "./CopyComponent";
 import ImageMapper from 'react-img-mapper';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faEdit, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons'
+import { faEdit, faEye, faEyeSlash, faTrash } from '@fortawesome/free-solid-svg-icons'
+import axios from "axios";
 
 export default class EditableModal extends React.Component {
 
@@ -16,10 +17,11 @@ export default class EditableModal extends React.Component {
                 areas: mapAreas,
             },
             // TEMP
-            visible: true,
+            original_visible: this.props.image.verified,
             diagnosis_visible: false,
+            edit_anatomy_map: false,
 
-            searchTimeout: setTimeout(this.performSearch, 0),
+            searchTimeout: null,
             entities: [
             ],
             selectedOption: {
@@ -32,6 +34,19 @@ export default class EditableModal extends React.Component {
                 },
             },
             query: "",
+            fetched_versions: [
+                // {
+                //     url: '',
+                //     version_number: '',
+                //     verified: false,
+                // },
+            ],
+            new_versions: [
+                // {
+                //     image: '',
+                //     url: '',
+                // },
+            ],
         }
         this.ref = React.createRef();
     }
@@ -41,6 +56,7 @@ export default class EditableModal extends React.Component {
         mapAreas.map((mapArea) => {
             mapArea.strokeColor = "#00000000";
             if (mapArea.name === this.props.image.anatomic_site) {
+                mapArea.strokeColor = "#5b7fb3ff";
                 mapArea.preFillColor = "#81aae64f";
             } else {
                 mapArea.preFillColor = "#00000000";
@@ -52,11 +68,21 @@ export default class EditableModal extends React.Component {
                 areas: JSON.parse(JSON.stringify(mapAreas))
             },
         });
+        this.getVersionImages();
+    }
+
+    async getVersionImages() {
+        let versions = await fetch(`${SERVER_ENDPOINT}/db_select?values=distinct version_number, CONCAT('${SERVER_ENDPOINT}/', filepath) as url, verified&from=VersionFile&where=measurement_id='${this.props.image.measurement_id}'`)
+            .then((imgs) => imgs.json())
+            .catch((err) => console.log(err));
+        this.setState({fetched_versions: versions});
+        console.log(versions);
+        return;
     }
 
     toggleVisibility(e) {
         this.setState({
-            visible: !this.state.visible
+            original_visible: !this.state.original_visible
         });
     }
 
@@ -113,6 +139,54 @@ export default class EditableModal extends React.Component {
         console.log(entity);
     }
 
+    handleClickImage(e) {
+        e.preventDefault();
+        let selectFieldID = `imgSelectField_${this.props.image.measurement_id}`;
+        document.getElementById(selectFieldID).click();
+    }
+
+    handleAddImage(e) {
+        let newURL = URL.createObjectURL(e.target.files[0]);
+        let updated_versions = [
+            ...this.state.new_versions,
+            {
+                image: e.target.files[0],
+                url: newURL,
+            },
+        ];
+        this.setState({
+            new_versions: updated_versions
+        });
+        console.log(`handleAddImage(e)`);
+    }
+
+    handleDeleteImage(index, caller) {
+        let new_vers = caller.state.new_versions;
+        new_vers.splice(index, 1);
+        caller.setState({
+            new_versions: new_vers,
+        });
+        console.log(`handleDeleteImage(e)`);
+    }
+
+    async handleUpdateMeasurement() {
+        //
+
+        if (window.confirm("Any updates will overwrite the previous metadata. Are you sure you want to update this image?")) {
+            const formData = new FormData();
+            let vers = 1;
+            this.state.new_versions.forEach((version_image) => {
+                formData.append(`${this.props.image.measurement_id}_v${vers}`, version_image.image);
+                vers++;
+            });
+            formData.append("measurement_id", this.props.image.measurement_id);
+    
+            await axios.post(`${SERVER_ENDPOINT}/update`, formData, {});
+            window.location.reload();
+        }
+        // add other update details
+    }
+
     render() {
         return (
             <div id={this.props.image.measurement_id} className="modal">
@@ -130,11 +204,48 @@ export default class EditableModal extends React.Component {
                                 <img src={this.props.image.url} class="img-fluid"/>
                                 <div className="hoverable-icon">
                                     <a className="edit-icon" onClick={this.toggleVisibility.bind(this)}>
-                                        <FontAwesomeIcon icon={ this.state.visible ? faEye : faEyeSlash } />
+                                        <FontAwesomeIcon icon={ this.state.original_visible ? faEye : faEyeSlash } />
                                     </a>
                                 </div>
                             </div>
-                            <button className="btn btn-large btn-secondary form-control form-control-lg">+ Add new version</button>
+                            {
+                                this.state.fetched_versions.length > 0 ?
+                                this.state.fetched_versions.map((version) => (
+                                    <div className="modal-img mb-3">
+                                        <img src={version.url} class="img-fluid"/>
+                                    </div>
+                                )) : 
+                                <></>
+                            }
+                            {
+                                this.state.new_versions.length > 0 ?
+                                this.state.new_versions.map((version, index) => (
+                                    <div className="overlay-wrapper modal-img">
+                                        <div className="modal-img mb-3">
+                                            <img src={version.url} class="img-fluid"/>
+                                            <div className="hoverable-icon">
+                                                <a className="dlt-icon" onClick={(e) => {
+                                                    e.preventDefault();
+                                                    this.handleDeleteImage(index, this)
+                                                }}>
+                                                    <FontAwesomeIcon icon={faTrash} />
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )) : 
+                                <></>
+                            }
+                            <button className="btn btn-large btn-secondary form-control form-control-lg"
+                                onClick={this.handleClickImage.bind(this)}>
+                                    + Add new version
+                            </button>
+                            <input type="file" className="hidden-passthrough"
+                                id={`imgSelectField_${this.props.image.measurement_id}`} name="newVersion" accept="image/*" 
+                                onChange={(e) => {
+                                        this.handleAddImage(e)
+                                    }
+                                }/>
                         </div>
                         {/*
                         CONTENT PANEL
@@ -302,7 +413,8 @@ export default class EditableModal extends React.Component {
                             </div>
                             <div className="mx-2 row">
                                 <div className="col-lg-6">
-                                    <button className="btn btn-large btn-primary form-control form-control-lg">Save</button>
+                                    <button className="btn btn-large btn-primary form-control form-control-lg"
+                                    onClick={this.handleUpdateMeasurement.bind(this)}>Save</button>
                                 </div>
                                 <div className="col-lg-6">
                                     <button className="btn btn-large btn-danger form-control form-control-lg">Delete</button>

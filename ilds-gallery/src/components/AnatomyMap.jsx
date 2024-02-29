@@ -9,10 +9,11 @@ export default class AnatomyMap extends React.Component {
         this.state = {
             map: {
                 name: 'anatomy-map',
-                areas: mapAreas
+                areas: JSON.parse(JSON.stringify(mapAreas))
             },
             sitename: "[No body site selected]"
         }
+        this.ref = React.createRef();
     }
 
     handleChangeAnatomicSite(area, index, e) {
@@ -29,6 +30,26 @@ export default class AnatomyMap extends React.Component {
         this.setState({
             sitename: area.title
         });
+
+        let newMap = [
+            ...this.state.map.areas
+        ];
+
+        newMap.map((mapArea) => {
+            mapArea.strokeColor = "#00000000";
+            if (mapArea.name === area.name) {
+                mapArea.strokeColor = "#5b7fb3ff";
+                mapArea.preFillColor = "#81aae64f";
+            } else {
+                mapArea.preFillColor = "#00000000";
+            }
+        })
+        this.setState({
+            map: {
+                name: 'anatomy-map',
+                areas: JSON.parse(JSON.stringify(newMap))
+            },
+        });
     }
 
     render() {
@@ -36,12 +57,17 @@ export default class AnatomyMap extends React.Component {
             <div>
                 <input type="input" className="form-control form-control-lg mb-3" id="sitename"
                     name="sitename" value={this.state.sitename} disabled/>
-                <ImageMapper src={`${process.env.PUBLIC_URL}/amap.png`} 
-                    map={this.state.map} 
-                    responsive={true} 
-                    parentWidth={800} 
-                    onClick={this.handleChangeAnatomicSite.bind(this)}
-                />
+                {
+                    this.props.show ? 
+                    <ImageMapper src={`${process.env.PUBLIC_URL}/amap.png`} 
+                        map={this.state.map} 
+                        areaKeyName={this.props.id}
+                        responsive={true} 
+                        parentWidth={800} 
+                        onClick={this.handleChangeAnatomicSite.bind(this)}
+                    /> :
+                    <></>
+                }
             </div>
         )
     }

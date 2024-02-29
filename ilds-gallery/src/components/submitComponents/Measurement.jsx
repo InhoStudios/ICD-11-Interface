@@ -448,12 +448,9 @@ export default class Measurement extends React.Component {
                                         this.state.selectedOption?.definition ? this.state.selectedOption.definition["@value"] : ""
                                     }</p>
                                 </div>
-                            </div>
-                            {
-                                this.state.show ?                                
-                                <AnatomyMap parent={this.props.parent} les_id={this.state.lesion_id} /> :
-                                <></>
-                            }
+                            </div>               
+                            <AnatomyMap show={this.state.show} id={`${this.props.id}_amap`} parent={this.props.parent} les_id={this.state.lesion_id} />
+                                
                             <div className="row">
                                 
                                 {/* <div className="col-lg-6 mb-3 dropdown">
