@@ -11,7 +11,8 @@ export default class AnatomyMap extends React.Component {
                 name: 'anatomy-map',
                 areas: JSON.parse(JSON.stringify(mapAreas))
             },
-            sitename: "[No body site selected]"
+            sitename: "[No body site selected]",
+            show_modal: false,
         }
         this.ref = React.createRef();
     }
@@ -51,23 +52,66 @@ export default class AnatomyMap extends React.Component {
             },
         });
     }
+    
+    openModal(e) {
+        e.preventDefault();
+        this.setState({
+            show_modal: true
+        });
+        document.getElementById(this.props.id).style.display="block";
+    }
+
+    closeModal(e) {
+        e.preventDefault();
+        this.setState({
+            show_modal: false
+        })
+        document.getElementById(this.props.id).style.display="none";
+    }
 
     render() {
         return (
             <div>
-                <input type="input" className="form-control form-control-lg mb-3" id="sitename"
-                    name="sitename" value={this.state.sitename} disabled/>
-                {
-                    this.props.show ? 
-                    <ImageMapper src={`${process.env.PUBLIC_URL}/amap.png`} 
-                        map={this.state.map} 
-                        areaKeyName={this.props.id}
-                        responsive={true} 
-                        parentWidth={800} 
-                        onClick={this.handleChangeAnatomicSite.bind(this)}
-                    /> :
-                    <></>
-                }
+                <div className="row">
+                    <div className="col-lg-8">
+                        <input type="input" className="form-control form-control-lg mb-3" id="sitename"
+                            name="sitename" value={this.state.sitename} disabled/>
+                    </div>
+                    <div className="col-lg-4">
+                        <input type="submit" className="form-control form-control-lg mb-3 btn-primary" id="sitename"
+                            name="sitename" onClick={this.openModal.bind(this)} value="Choose body site"/>
+                    </div>
+                </div>
+                <div id={this.props.id} className="modal">
+                    <span className="mx-3 close" onClick={this.closeModal.bind(this)}>&times;</span>
+                    <div className="modal-content" style={{height: "83%"}}>
+                        <div className="row text-center">
+                            <div className="col-lg-9">
+                                {
+                                    this.state.show_modal ? 
+                                    <ImageMapper src={`${process.env.PUBLIC_URL}/amap.png`} 
+                                        map={this.state.map} 
+                                        areaKeyName={this.props.id}
+                                        responsive={true} 
+                                        parentWidth={900} 
+                                        onClick={this.handleChangeAnatomicSite.bind(this)}
+                                    /> :
+                                    <></>
+                                }
+                            </div>
+                            <div className="col-lg-3">
+                                <input type="input" className="form-control form-control-lg mb-3" id="sitename"
+                                    name="sitename" value={this.state.sitename} disabled/>
+                                <input 
+                                    type="submit"
+                                    className={`form-control form-control-lg btn btn-outline btn-primary btn-lg`}
+                                    value="Okay" 
+                                    onClick={this.closeModal.bind(this)}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         )
     }
